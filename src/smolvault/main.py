@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
+from rich import print
 
+from smolvault.clients.database import DatabaseClient
 from smolvault.models import FileUpload
 
+db_client = DatabaseClient()
 app = FastAPI()
 
 
@@ -11,7 +14,9 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload/")
-async def read_item(file: FileUpload) -> FileUpload:
+async def upload_file(file: UploadFile) -> FileUpload:
+    print(file)
+    return FileUpload(name=file.filename, size=len(file.file.read()), content=file.file.read())  # type: ignore
     return file
 
 

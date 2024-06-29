@@ -12,6 +12,9 @@ python = "^3.11"
 pydantic = "^2.7.4"
 fastapi = "^0.111.0"
 aioboto3 = "^13.1.0"
+sqlmodel = "^0.0.19"
+rich = "^13.7.1"
+python-multipart = "^0.0.9"
 
 
 [tool.poetry.group.dev.dependencies]
