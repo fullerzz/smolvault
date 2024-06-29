@@ -2085,6 +2085,7 @@ files = [
 [package.dependencies]
 botocore-stubs = "*"
 types-aiobotocore = "*"
+types-aiobotocore-s3 = {version = "*", optional = true, markers = "extra == \"s3\""}
 types-s3transfer = "*"
 typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
 
@@ -2884,6 +2885,20 @@ workspaces-web = ["types-aiobotocore-workspaces-web (>=2.13.0,<2.14.0)"]
 xray = ["types-aiobotocore-xray (>=2.13.0,<2.14.0)"]
 
 [[package]]
+name = "types-aiobotocore-s3"
+version = "2.13.1"
+description = "Type annotations for aiobotocore.S3 2.13.1 service generated with mypy-boto3-builder 7.24.0"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types_aiobotocore_s3-2.13.1-py3-none-any.whl", hash = "sha256:6279d426d37c0c173ceb17eb9df52000335dd7d59f7a8b0de0294cb6823cac51"},
+    {file = "types_aiobotocore_s3-2.13.1.tar.gz", hash = "sha256:6149d412efa5476dfa246f7c26c70856374711a4a2211903a5b8826e1ffa5d46"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
 name = "types-awscrt"
 version = "0.20.12"
 description = "Type annotations and code completion for awscrt"
@@ -3462,4 +3477,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "74c2c6b1baa0f00c7b4cce33b3b17dc5430c746528abd6353f42871cd8192bfd"
+content-hash = "f26e62890ba209bdb9b72bbe5e29c8654d751345461a8809f997471b970069fd"
