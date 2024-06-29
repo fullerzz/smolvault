@@ -28,3 +28,17 @@ class FileUploadDTO(BaseModel):
     def cs_tags(self) -> str | None:
         """Comma-separated tags"""
         return ",".join(self.tags) if self.tags else None
+
+
+class FileMetadata(BaseModel):
+    name: str
+    size: int
+    upload_timestamp: str
+    link: str
+    file_sha256: str
+    cs_tags: str | None = Field(default=None, exclude=True)
+
+    @computed_field  # type: ignore
+    @cached_property
+    def tags(self) -> list[str] | None:
+        return self.cs_tags.split(",") if self.cs_tags else None

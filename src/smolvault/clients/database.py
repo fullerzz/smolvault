@@ -1,9 +1,11 @@
-from sqlmodel import Field, Session, SQLModel, create_engine
+from collections.abc import Sequence
+
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from smolvault.models import FileUploadDTO
 
 
-class FileMetadata(SQLModel, table=True):
+class FileMetadataRecord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     file_name: str
     file_sha256: str
@@ -21,7 +23,7 @@ class DatabaseClient:
         SQLModel.metadata.create_all(self.engine)
 
     def add_metadata(self, file_upload: FileUploadDTO, key: str) -> None:
-        file_metadata = FileMetadata(
+        file_metadata = FileMetadataRecord(
             file_name=file_upload.name,
             file_sha256=file_upload.file_sha256,
             object_key=key,
@@ -32,3 +34,11 @@ class DatabaseClient:
         with Session(self.engine) as session:
             session.add(file_metadata)
             session.commit()
+
+    def get_all_metadata(self) -> Sequence[FileMetadataRecord]:
+        with Session(self.engine) as session:
+            statement = select(FileMetadataRecord)
+            results = session.exec(statement)
+            for result in results:
+                print(result)
+            return results.fetchall()
