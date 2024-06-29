@@ -1,21 +1,12 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class FileUpload(BaseModel):
     name: str
     size: int
     content: bytes
+    upload_timestamp: datetime = Field(default_factory=lambda: datetime.now(ZoneInfo("UTC")))
     tags: list[str] | None = None
-
-
-class FileMetadata(BaseModel):
-    file_name: str
-    file_sha256: str
-    object_key: str
-    link: str
-    upload_timestamp: datetime
-    tags: list[str] | None
-    local_path: str | None
-    cache_timestamp: datetime | None

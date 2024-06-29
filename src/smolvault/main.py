@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
+from rich import print
 
+from smolvault.clients.database import DatabaseClient
 from smolvault.models import FileUpload
 
+db_client = DatabaseClient()
 app = FastAPI()
 
 
@@ -11,8 +14,15 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload/")
-async def read_item(file: FileUpload) -> FileUpload:
-    return file
+async def upload_file(file: UploadFile) -> FileUpload:
+    print(file)
+    contents = await file.read()
+    if file.filename is None:
+        raise ValueError("Filename is required")
+    file_upload = FileUpload(name=file.filename, size=len(contents), content=contents)
+    # TODO: Upload to S3 using aws client
+    # TODO: Add metadata to database
+    return file_upload
 
 
 @app.get("/file/{name}")
