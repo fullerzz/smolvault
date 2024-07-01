@@ -42,3 +42,9 @@ class DatabaseClient:
             for result in results:
                 print(result)
             return results.fetchall()
+
+    def select_metadata(self, filename: str) -> FileMetadataRecord | None:
+        # TODO: Figure out why this is not working
+        with Session(self.engine) as session:
+            statement = select(FileMetadataRecord).where(FileMetadataRecord.file_name == filename)
+            return session.exec(statement).first()
