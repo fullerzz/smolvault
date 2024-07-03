@@ -7,7 +7,7 @@ from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.models import FileMetadata, FileUploadDTO
 
-db_client = DatabaseClient()
+db_client = DatabaseClient(db_filename=os.environ["SMOLVAULT_DB"])
 s3_client = S3Client(bucket=os.environ["SMOLVAULT_BUCKET"])
 app = FastAPI(debug=True)
 
@@ -25,6 +25,7 @@ async def upload_file(file: UploadFile) -> dict[str, Any]:
     file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents)
     object_key = await s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
+    # TODO: Return 201 status code
     return file_upload.model_dump(exclude={"content"})
 
 
