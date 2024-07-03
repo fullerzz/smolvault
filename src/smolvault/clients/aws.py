@@ -1,22 +1,22 @@
 from typing import Any
 
-import aioboto3
+import boto3
 
 from smolvault.models import FileUploadDTO
 
 
 class S3Client:
-    def __init__(self, bucket: str) -> None:
-        self.session = aioboto3.Session()
-        self.bucket: str = bucket
+    def __init__(self, bucket_name: str) -> None:
+        self.bucket_name = bucket_name
+        self.session = boto3.Session()
+        self.client = self.session.client("s3")
+        self.bucket = self.session.resource("s3").Bucket(bucket_name)
 
-    async def upload(self, data: FileUploadDTO) -> str:
-        async with self.session.client("s3") as s3:
-            key = data.name
-            await s3.put_object(Bucket=self.bucket, Key=key, Body=data.content)
-            return key
+    def upload(self, data: FileUploadDTO) -> str:
+        key = data.name
+        self.bucket.put_object(Key=key, Body=data.content)
+        return key
 
-    async def download(self, key: str) -> Any:
-        async with self.session.client("s3") as s3:
-            response = await s3.get_object(Bucket=self.bucket, Key=key)
-            return await response["Body"].read()
+    def download(self, key: str) -> Any:
+        response = self.client.get_object(Bucket=self.bucket_name, Key=key)
+        return response["Body"].read()
