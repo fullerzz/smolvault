@@ -11,7 +11,6 @@ packages = [{include = "smolvault", from = "src"}]
 python = "^3.11"
 pydantic = "^2.7.4"
 fastapi = "^0.111.0"
-aioboto3 = "^13.1.0"
 sqlmodel = "^0.0.19"
 rich = "^13.7.1"
 python-multipart = "^0.0.9"
@@ -22,21 +21,19 @@ boto3-stubs = {extras = ["essential"], version = "^1.34.136"}
 pre-commit = "^3.7.1"
 ruff = "^0.5.0"
 mypy = "^1.10.1"
-types-aioboto3 = {extras = ["s3"], version = "^13.1.0"}
 pytest = "^8.2.2"
 pytest-asyncio = "^0.23.7"
 moto = "^5.0.10"
 
 
 [tool.ruff]
-extend-exclude = ["tests"]
 line-length = 120
 indent-width = 4
 
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "C90", "I", "N", "UP", "ASYNC", "S", "B", "ERA", "PLE", "PLW", "PERF", "RUF", "SIM"]
+select = ["E", "F", "W", "C90", "I", "N", "UP", "ASYNC", "S", "B", "ERA", "PLE", "PLW", "PERF", "RUF", "SIM", "PT"]
 ignore = ["E501"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

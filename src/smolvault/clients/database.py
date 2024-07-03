@@ -19,8 +19,8 @@ class FileMetadataRecord(SQLModel, table=True):
 
 
 class DatabaseClient:
-    def __init__(self) -> None:
-        self.engine = create_engine("sqlite:///file_metadata.db", echo=True)
+    def __init__(self, db_filename: str) -> None:
+        self.engine = create_engine(f"sqlite:///{db_filename}", echo=True)
         SQLModel.metadata.create_all(self.engine)
 
     def add_metadata(self, file_upload: FileUploadDTO, key: str) -> None:
