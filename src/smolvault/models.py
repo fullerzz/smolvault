@@ -1,4 +1,5 @@
 import hashlib
+import urllib.parse
 from datetime import datetime
 from functools import cached_property
 from zoneinfo import ZoneInfo
@@ -21,7 +22,7 @@ class FileUploadDTO(BaseModel):
     @computed_field  # type: ignore
     @cached_property
     def link(self) -> str:
-        return f"http://pi.local:1234/file/{self.name}"
+        return f"http://pi.local:1234/file/{urllib.parse.quote_plus(self.name)}"
 
     @computed_field  # type: ignore
     @cached_property
