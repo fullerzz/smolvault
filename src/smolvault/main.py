@@ -4,12 +4,12 @@ from typing import Any
 from fastapi import FastAPI, UploadFile
 
 from smolvault.clients.aws import S3Client
-from smolvault.clients.database import DatabaseClient
-from smolvault.models import FileUploadDTO
+from smolvault.clients.database import DatabaseClient, FileMetadataRecord
+from smolvault.models import FileMetadata, FileUploadDTO
 
 db_client = DatabaseClient()
 s3_client = S3Client(bucket=os.environ["SMOLVAULT_BUCKET"])
-app = FastAPI()
+app = FastAPI(debug=True)
 
 
 @app.get("/")
@@ -34,13 +34,16 @@ async def get_file(name: str) -> dict[str, str]:
 
 
 @app.get("/file/{name}/metadata")
-async def get_file_metadata(name: str) -> dict[str, int | str | list[str]]:
-    return {"name": name, "size": 100, "tags": ["tag1", "tag2"]}
+async def get_file_metadata(name: str) -> FileMetadataRecord | None:
+    return db_client.select_metadata(name)
 
 
 @app.get("/files/")
-async def get_files() -> list[dict[str, str]]:
-    return [{"name": "file1"}, {"name": "file2"}]
+async def get_files() -> list[FileMetadata]:
+    raw_metadata = db_client.get_all_metadata()
+    print(raw_metadata, locals())
+    results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
+    return results
 
 
 @app.get("/files/search/")
