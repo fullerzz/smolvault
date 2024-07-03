@@ -31,7 +31,7 @@ class FileUploadDTO(BaseModel):
 
 
 class FileMetadata(BaseModel):
-    name: str
+    name: str = Field(alias="file_name")
     size: int
     upload_timestamp: str
     link: str

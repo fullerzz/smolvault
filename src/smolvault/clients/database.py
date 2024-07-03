@@ -9,6 +9,7 @@ class FileMetadataRecord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     file_name: str
     file_sha256: str
+    size: int
     object_key: str
     link: str
     upload_timestamp: str
@@ -26,6 +27,7 @@ class DatabaseClient:
         file_metadata = FileMetadataRecord(
             file_name=file_upload.name,
             file_sha256=file_upload.file_sha256,
+            size=file_upload.size,
             object_key=key,
             link=file_upload.link,
             upload_timestamp=file_upload.upload_timestamp,
@@ -39,12 +41,9 @@ class DatabaseClient:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord)
             results = session.exec(statement)
-            for result in results:
-                print(result)
             return results.fetchall()
 
     def select_metadata(self, filename: str) -> FileMetadataRecord | None:
-        # TODO: Figure out why this is not working
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.file_name == filename)
             return session.exec(statement).first()
