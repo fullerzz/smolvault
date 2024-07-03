@@ -31,13 +31,16 @@ def _aws_credentials() -> None:
 @pytest.fixture()
 def aws(_aws_credentials: None) -> Generator[S3Client, Any, None]:
     with mock_aws():
-        yield boto3.client("s3", region_name="us-west-1")
+        yield boto3.client("s3")
 
 
 @pytest.fixture()
 def _test_bucket(aws: S3Client) -> None:
-    boto3.client("s3").create_bucket(Bucket="test-bucket")
-    boto3.client("s3").get_waiter("bucket_exists").wait(Bucket="test-bucket")
+    client = boto3.client("s3")
+    client.create_bucket(
+        ACL="private", Bucket="test-bucket", CreateBucketConfiguration={"LocationConstraint": "us-west-1"}
+    )
+    client.get_waiter("bucket_exists").wait(Bucket="test-bucket")
 
 
 @pytest.fixture()

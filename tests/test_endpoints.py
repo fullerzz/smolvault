@@ -1,7 +1,10 @@
 # ruff: noqa: S101
+from typing import Any
+
 import pytest
 from httpx import AsyncClient
 from smolvault.main import app
+from smolvault.models import FileUploadDTO
 
 
 @pytest.fixture(scope="module")
@@ -19,6 +22,10 @@ async def test_read_root(client: AsyncClient) -> None:
 @pytest.mark.asyncio()
 @pytest.mark.usefixtures("_test_bucket")
 async def test_upload_file(client: AsyncClient, camera_img: bytes) -> None:
+    expected_obj = FileUploadDTO(name="camera.png", size=len(camera_img), content=camera_img)
+    expected = expected_obj.model_dump(exclude={"content", "upload_timestamp"})
     response = await client.post("/file/upload/", files={"file": ("camera.png", camera_img, "image/png")})
+    actual: dict[str, Any] = response.json()
+    actual.pop("upload_timestamp")
     assert response.status_code == 200
-    assert response.json() == {"name": "camera.png", "size": len(camera_img)}
+    assert actual == expected
