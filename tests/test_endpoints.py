@@ -48,3 +48,9 @@ async def test_list_files(
     response = await client.get("/files/")
     assert response.status_code == 200
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
+
+
+@pytest.mark.asyncio()
+@pytest.mark.usefixtures("_test_bucket")
+async def test_get_file(client: AsyncClient) -> None:
+    pass

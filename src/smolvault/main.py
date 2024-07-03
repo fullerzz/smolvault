@@ -1,7 +1,10 @@
+import json
 import os
 from typing import Any
 
+import chardet
 from fastapi import FastAPI, UploadFile
+from fastapi.responses import Response
 
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -30,13 +33,17 @@ async def upload_file(file: UploadFile) -> dict[str, Any]:
 
 
 @app.get("/file/{name}")
-async def get_file(name: str) -> dict[str, str]:
-    return {"name": name}
+async def get_file(name: str) -> Response:
+    record = db_client.get_metadata(name)
+    if record is None:
+        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+    content = s3_client.download(record.object_key)
+    return Response(content=content, status_code=200, media_type=chardet.detect(content)["encoding"])
 
 
 @app.get("/file/{name}/metadata")
 async def get_file_metadata(name: str) -> FileMetadataRecord | None:
-    return db_client.select_metadata(name)
+    return db_client.get_metadata(name)
 
 
 @app.get("/files/")
