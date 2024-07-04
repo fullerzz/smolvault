@@ -8,4 +8,4 @@ if [ -f $SMOLVAULT_DB ]; then
     rm $SMOLVAULT_DB
 fi
 
-poetry run pytest -v tests/
+poetry run pytest -vvv tests/

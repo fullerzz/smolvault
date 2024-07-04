@@ -13,7 +13,7 @@ class FileMetadataRecord(SQLModel, table=True):
     object_key: str
     link: str
     upload_timestamp: str
-    tags: str
+    tags: str | None
     local_path: str | None = None
     cache_timestamp: int | None = None
 
