@@ -12,7 +12,7 @@ class FileUploadDTO(BaseModel):
     size: int
     content: bytes
     upload_timestamp: str = Field(default_factory=lambda: datetime.now(ZoneInfo("UTC")).isoformat())
-    tags: list[str] | None = None
+    tags: str | None  # comma separated tags
 
     @computed_field  # type: ignore
     @cached_property
@@ -26,9 +26,10 @@ class FileUploadDTO(BaseModel):
 
     @computed_field  # type: ignore
     @cached_property
-    def cs_tags(self) -> str | None:
-        """Comma-separated tags"""
-        return ",".join(self.tags) if self.tags else None
+    def tags_list(self) -> list[str]:
+        if self.tags is None or self.tags == "":
+            return []
+        return self.tags.split(",")
 
 
 class FileMetadata(BaseModel):

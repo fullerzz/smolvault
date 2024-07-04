@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 import boto3
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
 from smolvault.clients.database import FileMetadataRecord
@@ -20,6 +20,11 @@ def env_vars() -> dict[str, str]:
         "SMOLVAULT_DB": "test.db",
         "SMOLVAULT_BUCKET": "test-bucket",
     }
+
+
+@pytest.fixture(scope="module")
+def client() -> AsyncClient:
+    return AsyncClient(app=app, base_url="http://testserver")
 
 
 @pytest.fixture(scope="session")
@@ -54,18 +59,13 @@ def _bucket_w_camera_img(_test_bucket: None) -> None:
         client.put_object(Bucket="test-bucket", Key="camera.png", Body=f.read())
 
 
-@pytest.fixture()
-def test_client() -> TestClient:
-    return TestClient(app)
-
-
 @pytest.fixture(scope="session")
 def camera_img() -> bytes:
     with open("tests/mock_data/camera.png", "rb") as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def file_metadata_record() -> FileMetadataRecord:
     return FileMetadataRecord(
         file_name="camera.png",
@@ -74,9 +74,10 @@ def file_metadata_record() -> FileMetadataRecord:
         object_key="camera.png",
         link="1234",
         upload_timestamp=datetime.now(ZoneInfo("UTC")).isoformat(),
+        tags="",
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def file_metadata(file_metadata_record: FileMetadataRecord) -> FileMetadata:
     return FileMetadata.model_validate(file_metadata_record.model_dump())

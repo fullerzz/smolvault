@@ -1,8 +1,9 @@
 import json
 import os
+from typing import Annotated
 
 import chardet
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import Response
 
 from smolvault.clients.aws import S3Client
@@ -20,15 +21,18 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload/")
-async def upload_file(file: UploadFile) -> Response:
+async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Form(default=None)) -> Response:
     contents = await file.read()
     if file.filename is None:
         raise ValueError("Filename is required")
-    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents)
+    print(f"{tags=}")
+    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(
-        content=json.dumps(file_upload.model_dump(exclude={"content"})), status_code=201, media_type="application/json"
+        content=json.dumps(file_upload.model_dump(exclude={"content", "tags"})),
+        status_code=201,
+        media_type="application/json",
     )
 
 
@@ -42,8 +46,11 @@ async def get_file(name: str) -> Response:
 
 
 @app.get("/file/{name}/metadata")
-async def get_file_metadata(name: str) -> FileMetadataRecord | None:
-    return db_client.get_metadata(name)
+async def get_file_metadata(name: str) -> FileMetadata | None:
+    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    if record:
+        return FileMetadata.model_validate(record.model_dump())
+    return None
 
 
 @app.get("/files/")
