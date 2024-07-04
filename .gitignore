@@ -164,3 +164,8 @@ cython_debug/
 # sqlite database files
 *.sqlite3
 *.db
+
+# helper scripts
+scripts/*
+!scripts/start_dev.sh
+!scripts/test.sh
