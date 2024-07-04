@@ -48,6 +48,13 @@ def _test_bucket(aws: S3Client) -> None:
 
 
 @pytest.fixture()
+def _bucket_w_camera_img(_test_bucket: None) -> None:
+    client = boto3.client("s3")
+    with open("tests/mock_data/camera.png", "rb") as f:
+        client.put_object(Bucket="test-bucket", Key="camera.png", Body=f.read())
+
+
+@pytest.fixture()
 def test_client() -> TestClient:
     return TestClient(app)
 
