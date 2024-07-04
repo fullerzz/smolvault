@@ -4,6 +4,7 @@ from typing import Annotated
 
 import chardet
 from fastapi import FastAPI, File, Form, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 
 from smolvault.clients.aws import S3Client
@@ -13,6 +14,13 @@ from smolvault.models import FileMetadata, FileUploadDTO
 db_client = DatabaseClient(db_filename=os.environ["SMOLVAULT_DB"])
 s3_client = S3Client(bucket_name=os.environ["SMOLVAULT_BUCKET"])
 app = FastAPI(debug=True)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
