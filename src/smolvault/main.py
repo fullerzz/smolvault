@@ -28,7 +28,7 @@ async def read_root() -> dict[str, str]:
     return {"Hello": "World"}
 
 
-@app.post("/file/upload/")
+@app.post("/file/upload")
 async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Form(default=None)) -> Response:
     contents = await file.read()
     if file.filename is None:
@@ -61,14 +61,14 @@ async def get_file_metadata(name: str) -> FileMetadata | None:
     return None
 
 
-@app.get("/files/")
+@app.get("/files")
 async def get_files() -> list[FileMetadata]:
     raw_metadata = db_client.get_all_metadata()
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
 
-@app.get("/files/search/")
+@app.get("/files/search")
 async def search_files(tag: str) -> list[FileMetadata]:
     raw_metadata = db_client.select_metadata_by_tag(tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
