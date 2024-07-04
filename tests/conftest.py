@@ -65,7 +65,7 @@ def camera_img() -> bytes:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def file_metadata_record() -> FileMetadataRecord:
     return FileMetadataRecord(
         file_name="camera.png",
@@ -78,6 +78,6 @@ def file_metadata_record() -> FileMetadataRecord:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def file_metadata(file_metadata_record: FileMetadataRecord) -> FileMetadata:
     return FileMetadata.model_validate(file_metadata_record.model_dump())
