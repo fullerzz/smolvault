@@ -46,8 +46,11 @@ async def get_file(name: str) -> Response:
 
 
 @app.get("/file/{name}/metadata")
-async def get_file_metadata(name: str) -> FileMetadataRecord | None:
-    return db_client.get_metadata(name)
+async def get_file_metadata(name: str) -> FileMetadata | None:
+    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    if record:
+        return FileMetadata.model_validate(record.model_dump())
+    return None
 
 
 @app.get("/files/")
