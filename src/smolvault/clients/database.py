@@ -56,3 +56,13 @@ class DatabaseClient:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.file_name == filename)
             return session.exec(statement).first()
+
+    def select_metadata_by_tag(self, tag: str) -> Sequence[FileMetadataRecord]:
+        with Session(self.engine) as session:
+            statement = (
+                select(FileMetadataRecord)
+                .where(FileTag.file_id == FileMetadataRecord.id)
+                .where(FileTag.tag_name == tag)
+            )
+            results = session.exec(statement)
+            return results.fetchall()

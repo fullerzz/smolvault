@@ -29,7 +29,8 @@ class FileUploadDTO(BaseModel):
     def tags_list(self) -> list[str]:
         if self.tags is None or self.tags == "":
             return []
-        return self.tags.split(",")
+        parts = self.tags.split(",")
+        return [part.strip() for part in parts]
 
 
 class FileMetadata(BaseModel):
@@ -38,9 +39,11 @@ class FileMetadata(BaseModel):
     upload_timestamp: str
     link: str
     file_sha256: str
-    cs_tags: str | None = Field(default=None, exclude=True)
+    tags: str | None = Field(default=None, exclude=True)
 
     @computed_field  # type: ignore
     @cached_property
-    def tags(self) -> list[str] | None:
-        return self.cs_tags.split(",") if self.cs_tags else None
+    def tags_list(self) -> list[str] | None:
+        if self.tags is not None:
+            parts = self.tags.split(",")
+            return [part.strip() for part in parts]
