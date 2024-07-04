@@ -1,8 +1,8 @@
 import json
 import os
+import urllib.parse
 from typing import Annotated
 
-import chardet
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
@@ -45,16 +45,16 @@ async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Fo
 
 @app.get("/file/{name}")
 async def get_file(name: str) -> Response:
-    record = db_client.get_metadata(name)
+    record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     content = s3_client.download(record.object_key)
-    return Response(content=content, status_code=200, media_type=chardet.detect(content)["encoding"])
+    return Response(content=content, status_code=200, media_type="application/octet-stream")
 
 
 @app.get("/file/{name}/metadata")
 async def get_file_metadata(name: str) -> FileMetadata | None:
-    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name))
     if record:
         return FileMetadata.model_validate(record.model_dump())
     return None

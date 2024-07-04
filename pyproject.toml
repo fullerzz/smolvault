@@ -14,7 +14,6 @@ fastapi = "^0.111.0"
 sqlmodel = "^0.0.19"
 rich = "^13.7.1"
 python-multipart = "^0.0.9"
-chardet = "^5.2.0"
 beartype = "^0.18.5"
 
 
