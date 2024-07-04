@@ -49,7 +49,6 @@ async def get_file_metadata(name: str) -> FileMetadataRecord | None:
 @app.get("/files/")
 async def get_files() -> list[FileMetadata]:
     raw_metadata = db_client.get_all_metadata()
-    print(raw_metadata, locals())
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
