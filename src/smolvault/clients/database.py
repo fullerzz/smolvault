@@ -7,7 +7,7 @@ from smolvault.models import FileUploadDTO
 
 class FileMetadataRecord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    file_name: str
+    file_name: str = Field(index=True)
     file_sha256: str
     size: int
     object_key: str
@@ -16,6 +16,12 @@ class FileMetadataRecord(SQLModel, table=True):
     tags: str | None
     local_path: str | None = None
     cache_timestamp: int | None = None
+
+
+class FileTag(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    tag_name: str = Field(index=True)
+    file_id: int | None = Field(default=None, foreign_key="filemetadatarecord.id")
 
 
 class DatabaseClient:
@@ -35,6 +41,9 @@ class DatabaseClient:
         )
         with Session(self.engine) as session:
             session.add(file_metadata)
+            session.commit()
+            for tag in file_upload.tags_list:
+                session.add(FileTag(tag_name=tag, file_id=file_metadata.id))
             session.commit()
 
     def get_all_metadata(self) -> Sequence[FileMetadataRecord]:
