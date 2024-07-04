@@ -48,4 +48,4 @@ jobs:
     - name: Test with pytest
       run: |
         source .venv/bin/activate
-        bash -c tests/test.sh
+        bash -c scripts/test.sh
