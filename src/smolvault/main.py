@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Any
 
 import chardet
 from fastapi import FastAPI, UploadFile
@@ -21,15 +20,16 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload/")
-async def upload_file(file: UploadFile) -> dict[str, Any]:
+async def upload_file(file: UploadFile) -> Response:
     contents = await file.read()
     if file.filename is None:
         raise ValueError("Filename is required")
     file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
-    # TODO: Return 201 status code
-    return file_upload.model_dump(exclude={"content"})
+    return Response(
+        content=json.dumps(file_upload.model_dump(exclude={"content"})), status_code=201, media_type="application/json"
+    )
 
 
 @app.get("/file/{name}")

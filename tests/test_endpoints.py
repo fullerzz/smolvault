@@ -29,7 +29,7 @@ async def test_upload_file(client: AsyncClient, camera_img: bytes) -> None:
     response = await client.post("/file/upload/", files={"file": ("camera.png", camera_img, "image/png")})
     actual: dict[str, Any] = response.json()
     actual.pop("upload_timestamp")
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert actual == expected
 
 
