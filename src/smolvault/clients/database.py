@@ -66,3 +66,9 @@ class DatabaseClient:
             )
             results = session.exec(statement)
             return results.fetchall()
+
+    def update_metadata(self, record: FileMetadataRecord) -> None:
+        with Session(self.engine) as session:
+            session.add(record)
+            session.commit()
+            session.refresh(record)

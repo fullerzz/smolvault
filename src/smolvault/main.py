@@ -6,10 +6,11 @@ import chardet
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from rich import print
 
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
-from smolvault.models import FileMetadata, FileUploadDTO
+from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 
 db_client = DatabaseClient(db_filename=os.environ["SMOLVAULT_DB"])
 s3_client = S3Client(bucket_name=os.environ["SMOLVAULT_BUCKET"])
@@ -73,3 +74,19 @@ async def search_files(tag: str) -> list[FileMetadata]:
     raw_metadata = db_client.select_metadata_by_tag(tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
+
+
+@app.patch("/file/{name}/tags")
+async def update_file_tags(name: str, tags: FileTagsDTO) -> Response:
+    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    if record is None:
+        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+
+    record.tags = tags.tags_str
+    db_client.update_metadata(record)
+    file_metadata = FileMetadata.model_validate(record.model_dump())
+    return Response(
+        content=json.dumps({"message": "Tags updated successfully", "record": file_metadata.model_dump()}),
+        status_code=200,
+        media_type="application/json",
+    )

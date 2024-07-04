@@ -33,6 +33,18 @@ class FileUploadDTO(BaseModel):
         return [part.strip() for part in parts]
 
 
+class FileTagsDTO(BaseModel):
+    tags: list[str]
+
+    @computed_field  # type: ignore
+    @cached_property
+    def tags_str(self) -> str:
+        combined_tags = ""
+        for tag in self.tags:
+            combined_tags += tag.strip() + ","
+        return combined_tags[:-1]
+
+
 class FileMetadata(BaseModel):
     name: str = Field(alias="file_name")
     size: int
