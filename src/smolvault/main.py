@@ -6,7 +6,6 @@ import chardet
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from rich import print
 
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -34,7 +33,6 @@ async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Fo
     contents = await file.read()
     if file.filename is None:
         raise ValueError("Filename is required")
-    print(f"{tags=}")
     file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
