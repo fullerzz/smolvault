@@ -1,0 +1,3 @@
+from beartype.claw import beartype_this_package  # <-- this is boring, but...
+
+beartype_this_package()  # <-- the fast way
