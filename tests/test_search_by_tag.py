@@ -9,7 +9,7 @@ async def test_search_tag_exists(
     client: AsyncClient,
     file_metadata: FileMetadata,
 ) -> None:
-    response = await client.get("/files/search/", params={"tag": "camera"})
+    response = await client.get("/files/search", params={"tag": "camera"})
     assert response.status_code == 200
     assert len(response.json()) == 1
 
@@ -24,7 +24,7 @@ async def test_search_tag_exists(
 async def test_search_tag_not_found(
     client: AsyncClient,
 ) -> None:
-    response = await client.get("/files/search/", params={"tag": "fake-tag"})
+    response = await client.get("/files/search", params={"tag": "fake-tag"})
     assert response.status_code == 200
     assert len(response.json()) == 0
     assert response.json() == []

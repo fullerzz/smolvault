@@ -26,7 +26,7 @@ async def test_list_files(
         return [file_metadata_record]
 
     monkeypatch.setattr(DatabaseClient, "get_all_metadata", mock_get_all_files)
-    response = await client.get("/files/")
+    response = await client.get("/files")
     assert response.status_code == 200
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
 
