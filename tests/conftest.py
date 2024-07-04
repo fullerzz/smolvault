@@ -74,6 +74,7 @@ def file_metadata_record() -> FileMetadataRecord:
         object_key="camera.png",
         link="1234",
         upload_timestamp=datetime.now(ZoneInfo("UTC")).isoformat(),
+        tags="",
     )
 
 

@@ -1,8 +1,9 @@
 import json
 import os
+from typing import Annotated
 
 import chardet
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import Response
 
 from smolvault.clients.aws import S3Client
@@ -20,11 +21,11 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload/")
-async def upload_file(file: UploadFile) -> Response:
+async def upload_file(file: Annotated[UploadFile, File()], tags: Annotated[str, Form()]) -> Response:
     contents = await file.read()
     if file.filename is None:
         raise ValueError("Filename is required")
-    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents)
+    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(

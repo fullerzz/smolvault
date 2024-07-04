@@ -12,7 +12,7 @@ class FileUploadDTO(BaseModel):
     size: int
     content: bytes
     upload_timestamp: str = Field(default_factory=lambda: datetime.now(ZoneInfo("UTC")).isoformat())
-    tags: list[str] | None = None
+    tags: str  # comma separataed tags
 
     @computed_field  # type: ignore
     @cached_property
@@ -23,12 +23,6 @@ class FileUploadDTO(BaseModel):
     @cached_property
     def link(self) -> str:
         return f"http://pi.local:1234/file/{urllib.parse.quote_plus(self.name)}"
-
-    @computed_field  # type: ignore
-    @cached_property
-    def cs_tags(self) -> str | None:
-        """Comma-separated tags"""
-        return ",".join(self.tags) if self.tags else None
 
 
 class FileMetadata(BaseModel):

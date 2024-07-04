@@ -13,7 +13,7 @@ class FileMetadataRecord(SQLModel, table=True):
     object_key: str
     link: str
     upload_timestamp: str
-    tags: str | None = None
+    tags: str
     local_path: str | None = None
     cache_timestamp: int | None = None
 
@@ -31,7 +31,7 @@ class DatabaseClient:
             object_key=key,
             link=file_upload.link,
             upload_timestamp=file_upload.upload_timestamp,
-            tags=file_upload.cs_tags,
+            tags=file_upload.tags,
         )
         with Session(self.engine) as session:
             session.add(file_metadata)
