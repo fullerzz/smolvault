@@ -61,5 +61,7 @@ async def get_files() -> list[FileMetadata]:
 
 
 @app.get("/files/search/")
-async def search_files(query: str) -> list[dict[str, str]]:
-    return [{"name": "file1"}, {"name": "file2"}]
+async def search_files(tag: str) -> list[FileMetadata]:
+    raw_metadata = db_client.select_metadata_by_tag(tag)
+    results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
+    return results
