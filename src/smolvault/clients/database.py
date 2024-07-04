@@ -72,3 +72,13 @@ class DatabaseClient:
             session.add(record)
             session.commit()
             session.refresh(record)
+
+    def delete_metadata(self, record: FileMetadataRecord) -> None:
+        with Session(self.engine) as session:
+            session.delete(record)
+            session.commit()
+            statement = select(FileTag).where(FileTag.file_id == record.id)
+            tags = session.exec(statement)
+            for tag in tags:
+                session.delete(tag)
+            session.commit()

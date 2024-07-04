@@ -20,3 +20,6 @@ class S3Client:
     def download(self, key: str) -> Any:
         response = self.client.get_object(Bucket=self.bucket_name, Key=key)
         return response["Body"].read()
+
+    def delete(self, key: str) -> None:
+        self.client.delete_object(Bucket=self.bucket_name, Key=key)

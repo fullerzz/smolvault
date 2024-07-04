@@ -90,3 +90,17 @@ async def update_file_tags(name: str, tags: FileTagsDTO) -> Response:
         status_code=200,
         media_type="application/json",
     )
+
+
+@app.delete("/file/{name}")
+async def delete_file(name: str) -> Response:
+    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    if record is None:
+        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+    s3_client.delete(record.object_key)
+    db_client.delete_metadata(record)
+    return Response(
+        content=json.dumps({"message": "File deleted successfully", "record": record.model_dump()}),
+        status_code=200,
+        media_type="application/json",
+    )
