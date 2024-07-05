@@ -33,7 +33,7 @@ async def test_list_files(
 
 
 @pytest.mark.asyncio()
-@pytest.mark.usefixtures("_bucket_w_camera_img", "_aws_credentials")
+@pytest.mark.usefixtures("_bucket_w_camera_img")
 async def test_get_file(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
