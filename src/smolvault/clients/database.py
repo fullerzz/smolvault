@@ -1,3 +1,4 @@
+import os
 from collections.abc import Sequence
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
@@ -25,7 +26,7 @@ class FileTag(SQLModel, table=True):
 
 
 class DatabaseClient:
-    def __init__(self, db_filename: str) -> None:
+    def __init__(self, db_filename: str = os.environ["SMOLVAULT_DB"]) -> None:
         self.engine = create_engine(f"sqlite:///{db_filename}", echo=True)
         SQLModel.metadata.create_all(self.engine)
 
@@ -66,3 +67,19 @@ class DatabaseClient:
             )
             results = session.exec(statement)
             return results.fetchall()
+
+    def update_metadata(self, record: FileMetadataRecord) -> None:
+        with Session(self.engine) as session:
+            session.add(record)
+            session.commit()
+            session.refresh(record)
+
+    def delete_metadata(self, record: FileMetadataRecord) -> None:
+        with Session(self.engine) as session:
+            session.delete(record)
+            session.commit()
+            statement = select(FileTag).where(FileTag.file_id == record.id)
+            tags = session.exec(statement)
+            for tag in tags:
+                session.delete(tag)
+            session.commit()

@@ -9,21 +9,21 @@ import pytest
 from httpx import AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
-from smolvault.clients.database import FileMetadataRecord
+from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
 from smolvault.main import app
 from smolvault.models import FileMetadata
+from sqlmodel import SQLModel, create_engine
 
 
-@pytest.fixture(scope="session")
-def env_vars() -> dict[str, str]:
-    return {
-        "SMOLVAULT_DB": "test.db",
-        "SMOLVAULT_BUCKET": "test-bucket",
-    }
+class TestDatabaseClient(DatabaseClient):
+    def __init__(self) -> None:
+        self.engine = create_engine("sqlite:///test.db", echo=True, connect_args={"check_same_thread": False})
+        SQLModel.metadata.create_all(self.engine)
 
 
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
+    app.dependency_overrides[DatabaseClient] = TestDatabaseClient
     return AsyncClient(app=app, base_url="http://testserver")
 
 
