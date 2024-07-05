@@ -53,7 +53,7 @@ async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Fo
 
 
 @app.get("/file/{name}")
-async def get_file(name: str) -> FileResponse | Response:
+async def get_file(name: str) -> Response:
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
