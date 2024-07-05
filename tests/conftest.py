@@ -24,7 +24,7 @@ class TestDatabaseClient(DatabaseClient):
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
-    return AsyncClient(app=app, base_url="http://testserver")
+    return AsyncClient(app=app, base_url="http://testserver", timeout=5.0)
 
 
 @pytest.fixture(scope="session")
