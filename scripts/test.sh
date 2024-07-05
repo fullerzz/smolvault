@@ -14,6 +14,6 @@ if [ -f $SMOLVAULT_CACHE ]; then
     rm -rf $SMOLVAULT_CACHE
 fi
 
-poetry run pytest -vv tests/
+poetry run pytest -v tests/
 
 rm -rf $SMOLVAULT_CACHE
