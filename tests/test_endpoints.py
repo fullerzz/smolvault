@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -39,10 +40,11 @@ async def test_get_file(
     file_metadata_record: FileMetadataRecord,
     camera_img: bytes,
 ) -> None:
+    filename = f"{uuid4().hex[:6]}-camera.png"
     await client.post(
-        "/file/upload", files={"file": ("camera.png", camera_img, "image/png")}, data={"tags": "camera,photo"}
+        "/file/upload", files={"file": (filename, camera_img, "image/png")}, data={"tags": "camera,photo"}
     )
-    response = await client.get("/file/camera.png")
+    response = await client.get(f"/file/{filename}")
     assert response.status_code == 200
     assert response.content == camera_img
 
