@@ -6,8 +6,9 @@ from typing import Annotated
 
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 
+from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 db_client = DatabaseClient(db_filename=os.environ["SMOLVAULT_DB"])
 s3_client = S3Client(bucket_name=os.environ["SMOLVAULT_BUCKET"])
+cache = CacheManager(cache_dir=os.environ["SMOLVAULT_CACHE"])
 app = FastAPI(debug=True)
 app.add_middleware(
     CORSMiddleware,
@@ -51,12 +53,17 @@ async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Fo
 
 
 @app.get("/file/{name}")
-async def get_file(name: str) -> Response:
+async def get_file(name: str) -> FileResponse | Response:
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
-    content = s3_client.download(record.object_key)
-    return Response(content=content, status_code=200, media_type="application/octet-stream")
+    if record.local_path is None:
+        content = s3_client.download(record.object_key)
+        record.local_path = cache.save_file(record.file_name, content)
+        record.cache_timestamp = int(os.path.getmtime(record.local_path))
+        db_client.update_metadata(record)
+
+    return FileResponse(path=record.local_path, filename=record.file_name)
 
 
 @app.get("/file/{name}/metadata")
