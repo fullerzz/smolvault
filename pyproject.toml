@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "smolvault"
-version = "0.1.0"
+version = "0.1.1.dev"
 description = ""
 license = "MIT"
 authors = ["Zach Fuller <zach.fuller1222@gmail.com>"]
