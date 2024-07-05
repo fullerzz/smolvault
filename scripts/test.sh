@@ -14,4 +14,7 @@ if [ -f $SMOLVAULT_CACHE ]; then
     rm -rf $SMOLVAULT_CACHE
 fi
 
+# create local cache dir
+mkdir uploads
+
 poetry run pytest -vv tests/
