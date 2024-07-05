@@ -60,7 +60,7 @@ async def get_file(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
-    if record.local_path is None:
+    if record.local_path is None or cache.file_exists(record.local_path) is False:
         content = s3_client.download(record.object_key)
         record.local_path = cache.save_file(record.file_name, content)
         record.cache_timestamp = int(os.path.getmtime(record.local_path))
