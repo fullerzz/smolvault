@@ -6,7 +6,7 @@ import boto3
 from smolvault.models import FileUploadDTO
 
 logging.basicConfig(
-    level=logging.DEBUG, filename="app.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO, filename="app.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 

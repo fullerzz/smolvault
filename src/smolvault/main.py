@@ -4,22 +4,23 @@ import os
 import urllib.parse
 from typing import Annotated
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import Depends, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 
+from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 
 logging.basicConfig(
-    level=logging.DEBUG, filename="app.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO, filename="app.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 
-db_client = DatabaseClient(db_filename=os.environ["SMOLVAULT_DB"])
 s3_client = S3Client(bucket_name=os.environ["SMOLVAULT_BUCKET"])
+cache = CacheManager(cache_dir=os.environ["SMOLVAULT_CACHE"])
 app = FastAPI(debug=True)
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +37,11 @@ async def read_root() -> dict[str, str]:
 
 
 @app.post("/file/upload")
-async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Form(default=None)) -> Response:
+async def upload_file(
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    file: Annotated[UploadFile, File()],
+    tags: str | None = Form(default=None),
+) -> Response:
     contents = await file.read()
     if file.filename is None:
         raise ValueError("Filename is required")
@@ -51,16 +56,23 @@ async def upload_file(file: Annotated[UploadFile, File()], tags: str | None = Fo
 
 
 @app.get("/file/{name}")
-async def get_file(name: str) -> Response:
+async def get_file(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str) -> Response:
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
-    content = s3_client.download(record.object_key)
-    return Response(content=content, status_code=200, media_type="application/octet-stream")
+    if record.local_path is None or cache.file_exists(record.local_path) is False:
+        content = s3_client.download(record.object_key)
+        record.local_path = cache.save_file(record.file_name, content)
+        record.cache_timestamp = int(os.path.getmtime(record.local_path))
+        db_client.update_metadata(record)
+
+    return FileResponse(path=record.local_path, filename=record.file_name)
 
 
 @app.get("/file/{name}/metadata")
-async def get_file_metadata(name: str) -> FileMetadata | None:
+async def get_file_metadata(
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str
+) -> FileMetadata | None:
     record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name))
     if record:
         return FileMetadata.model_validate(record.model_dump())
@@ -68,21 +80,23 @@ async def get_file_metadata(name: str) -> FileMetadata | None:
 
 
 @app.get("/files")
-async def get_files() -> list[FileMetadata]:
+async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]) -> list[FileMetadata]:
     raw_metadata = db_client.get_all_metadata()
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
 
 @app.get("/files/search")
-async def search_files(tag: str) -> list[FileMetadata]:
+async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], tag: str) -> list[FileMetadata]:
     raw_metadata = db_client.select_metadata_by_tag(tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
 
 @app.patch("/file/{name}/tags")
-async def update_file_tags(name: str, tags: FileTagsDTO) -> Response:
+async def update_file_tags(
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, tags: FileTagsDTO
+) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
@@ -98,7 +112,7 @@ async def update_file_tags(name: str, tags: FileTagsDTO) -> Response:
 
 
 @app.delete("/file/{name}")
-async def delete_file(name: str) -> Response:
+async def delete_file(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")

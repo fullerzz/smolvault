@@ -1,3 +1,4 @@
+import os
 from collections.abc import Sequence
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
@@ -25,7 +26,7 @@ class FileTag(SQLModel, table=True):
 
 
 class DatabaseClient:
-    def __init__(self, db_filename: str) -> None:
+    def __init__(self, db_filename: str = os.environ["SMOLVAULT_DB"]) -> None:
         self.engine = create_engine(f"sqlite:///{db_filename}", echo=True)
         SQLModel.metadata.create_all(self.engine)
 
