@@ -12,18 +12,12 @@ from mypy_boto3_s3 import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
 from smolvault.main import app
 from smolvault.models import FileMetadata
-from sqlalchemy import StaticPool
 from sqlmodel import SQLModel, create_engine
 
 
 class TestDatabaseClient(DatabaseClient):
     def __init__(self) -> None:
-        self.engine = create_engine(
-            "sqlite://",
-            echo=False,
-            connect_args={"check_same_thread": False},
-            poolclass=StaticPool,
-        )
+        self.engine = create_engine("sqlite:///test.db", echo=True, connect_args={"check_same_thread": False})
         SQLModel.metadata.create_all(self.engine)
 
 

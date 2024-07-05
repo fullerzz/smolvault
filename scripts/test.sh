@@ -2,7 +2,7 @@
 
 export SMOLVAULT_BUCKET="test-bucket"
 export SMOLVAULT_DB="test.db"
-export SMOLVAULT_CACHE="uploads/"
+export SMOLVAULT_CACHE="./uploads/"
 
 # remove test db if it exists
 if [ -f $SMOLVAULT_DB ]; then
@@ -15,5 +15,3 @@ if [ -f $SMOLVAULT_CACHE ]; then
 fi
 
 poetry run pytest -v tests/
-
-rm -rf $SMOLVAULT_CACHE
