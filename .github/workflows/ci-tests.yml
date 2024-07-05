@@ -47,5 +47,6 @@ jobs:
         mypy src/smolvault
     - name: Test with pytest
       run: |
+        mkdir ~/.aws && touch ~/.aws/credentials && echo -e "[default]\naws_access_key_id = test\naws_secret_access_key = test" > ~/.aws/credentials
         source .venv/bin/activate
         bash -c scripts/test.sh
