@@ -39,11 +39,11 @@ async def test_get_file(
     file_metadata_record: FileMetadataRecord,
     camera_img: bytes,
 ) -> None:
-    def mock_get_metadata(*args: Any, **kwargs: Any) -> FileMetadataRecord | None:
-        return file_metadata_record
-
-    monkeypatch.setattr(DatabaseClient, "get_metadata", mock_get_metadata)
+    await client.post(
+        "/file/upload", files={"file": ("camera.png", camera_img, "image/png")}, data={"tags": "camera,photo"}
+    )
     response = await client.get("/file/camera.png")
+    assert response.status_code == 200
     assert response.content == camera_img
 
 
