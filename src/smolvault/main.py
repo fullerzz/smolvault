@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, Response
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
+from smolvault.config import Settings, get_settings
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 
 logging.basicConfig(
@@ -18,9 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-s3_client = S3Client(bucket_name=os.environ["SMOLVAULT_BUCKET"])
-cache = CacheManager(cache_dir=os.environ["SMOLVAULT_CACHE"])
 app = FastAPI(debug=True)
 app.add_middleware(
     CORSMiddleware,
@@ -29,6 +27,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+settings: Settings = get_settings()
+s3_client = S3Client(bucket_name=settings.smolvault_bucket)
+cache = CacheManager(cache_dir=settings.smolvault_cache)
 
 
 @app.get("/")

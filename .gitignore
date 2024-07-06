@@ -172,3 +172,7 @@ scripts/*
 
 # local file cache
 uploads/*
+
+# env files
+*.env
+!tests/testing.env

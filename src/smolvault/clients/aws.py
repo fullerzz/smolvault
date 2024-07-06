@@ -3,6 +3,7 @@ from typing import Any
 
 import boto3
 
+from smolvault.config import get_settings
 from smolvault.models import FileUploadDTO
 
 logging.basicConfig(
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 class S3Client:
     def __init__(self, bucket_name: str) -> None:
         logger.debug(f"Creating S3 client for bucket {bucket_name}")
+        self.settings = get_settings()
         self.bucket_name = bucket_name
         self.session = boto3.Session()
         self.client = self.session.client("s3")

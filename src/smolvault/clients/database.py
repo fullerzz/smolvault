@@ -1,8 +1,8 @@
-import os
 from collections.abc import Sequence
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
+from smolvault.config import get_settings
 from smolvault.models import FileUploadDTO
 
 
@@ -26,8 +26,9 @@ class FileTag(SQLModel, table=True):
 
 
 class DatabaseClient:
-    def __init__(self, db_filename: str = os.environ["SMOLVAULT_DB"]) -> None:
-        self.engine = create_engine(f"sqlite:///{db_filename}", echo=True)
+    def __init__(self) -> None:
+        self.settings = get_settings()
+        self.engine = create_engine(f"sqlite:///{self.settings.smolvault_db}", echo=True)
         SQLModel.metadata.create_all(self.engine)
 
     def add_metadata(self, file_upload: FileUploadDTO, key: str) -> None:
