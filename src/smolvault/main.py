@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+import sys
 import urllib.parse
+from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, File, Form, UploadFile
@@ -15,11 +17,13 @@ from smolvault.config import Settings, get_settings
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 
 logging.basicConfig(
-    level=logging.INFO, filename="app.log", filemode="a", format="%(asctime)s - %(levelname)s - %(message)s"
+    handlers=[RotatingFileHandler("app.log", maxBytes=100_000, backupCount=10), logging.StreamHandler(sys.stdout)],
+    level=logging.INFO,
+    format="%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(debug=True)
+app = FastAPI(title="smolvault")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
