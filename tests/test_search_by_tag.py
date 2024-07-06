@@ -19,7 +19,7 @@ async def test_search_tag_exists(
     # Expected metadata
     file_metadata.name = "tagged-camera.png"
     file_metadata.tags = "pytest, random, pixels"
-    file_metadata.link = "http://pi.local:1234/file/tagged-camera.png"
+    file_metadata.link = "http://pi.local:8000/file/tagged-camera.png"
     expected = [file_metadata.model_dump(by_alias=True, exclude={"upload_timestamp"})]
 
     response = await client.get("/files/search", params={"tag": "pytest"})
