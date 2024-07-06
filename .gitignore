@@ -175,3 +175,4 @@ uploads/*
 
 # env files
 *.env
+!tests/testing.env
