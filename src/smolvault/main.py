@@ -19,7 +19,7 @@ from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 logging.basicConfig(
     handlers=[RotatingFileHandler("app.log", maxBytes=100_000, backupCount=10), logging.StreamHandler(sys.stdout)],
     level=logging.INFO,
-    format="%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s",
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
 
