@@ -1,3 +1,3 @@
 #!/bin/bash
 
-poetry run fastapi dev src/smolvault/main.py
+poetry run uvicorn src.smolvault.main:app --reload --log-config=log_conf.yaml
