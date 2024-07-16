@@ -1,0 +1,43 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    # "()": uvicorn.logging.DefaultFormatter
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  access:
+    # "()": uvicorn.logging.AccessFormatter
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  default:
+    formatter: default
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+  access:
+    formatter: access
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: default
+    filename: uvicorn.log
+    maxBytes: 10485760
+    backupCount: 5
+    encoding: utf8
+loggers:
+  uvicorn.error:
+    level: DEBUG
+    handlers:
+      - default
+      - file
+    propagate: no
+  uvicorn.access:
+    level: DEBUG
+    handlers:
+      - access
+      - file
+    propagate: no
+root:
+  level: DEBUG
+  handlers:
+    - default
+  propagate: no
