@@ -40,4 +40,5 @@ root:
   level: DEBUG
   handlers:
     - default
-  propagate: no
+    - file
+  propagate: yes
