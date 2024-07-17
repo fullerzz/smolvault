@@ -169,6 +169,7 @@ cython_debug/
 scripts/*
 !scripts/start_dev.sh
 !scripts/test.sh
+!scripts/start_app.sh
 
 # local file cache
 uploads/*
