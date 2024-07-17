@@ -63,7 +63,7 @@ async def upload_file(
     )
 
 
-@app.get("/file/{name}")
+@app.get("/file/{name:path}")
 async def get_file(
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
 ) -> Response:
