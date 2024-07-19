@@ -8,6 +8,7 @@ from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 
 from smolvault.cache.cache_manager import CacheManager
@@ -31,6 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 settings: Settings = get_settings()
 s3_client = S3Client(bucket_name=settings.smolvault_bucket)
