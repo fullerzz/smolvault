@@ -22,7 +22,7 @@ class FileUploadDTO(BaseModel):
     @computed_field  # type: ignore
     @cached_property
     def link(self) -> str:
-        return f"http://pi.local:8000/file/{urllib.parse.quote_plus(self.name)}"
+        return f"http://pi.local:8000/file/original?{urllib.parse.quote_plus(self.name)}"
 
     @computed_field  # type: ignore
     @cached_property
