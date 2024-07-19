@@ -63,16 +63,16 @@ async def upload_file(
     )
 
 
-@app.get("/file/{name:path}/")
+@app.get("/file/original")
 async def get_file(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], filename: str, background_tasks: BackgroundTasks
 ) -> Response:
-    record = db_client.get_metadata(urllib.parse.unquote(name))
+    record = db_client.get_metadata(filename)
     if record is None:
-        logger.info("File %s not found in database", name)
+        logger.info("File not found: %s", filename)
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     if record.local_path is None or cache.file_exists(record.file_name) is False:
-        logger.info("File %s not found in cache, downloading from S3", record.file_name)
+        logger.info("File %s not found in cache, downloading from S3", filename)
         content = s3_client.download(record.object_key)
         record.local_path = cache.save_file(record.file_name, content)
         record.cache_timestamp = int(pathlib.Path(record.local_path).stat().st_mtime)
