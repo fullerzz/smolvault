@@ -50,8 +50,10 @@ async def upload_file(
 ) -> Response:
     contents = await file.read()
     if file.filename is None:
+        logger.error("Filename not received in request")
         raise ValueError("Filename is required")
     file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
+    logger.info("Uploading file to S3 with name %s", file_upload.name)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(
@@ -67,13 +69,16 @@ async def get_file(
 ) -> Response:
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
+        logger.info("File %s not found in database", name)
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
-    if record.local_path is None or cache.file_exists(record.local_path) is False:
+    if record.local_path is None or cache.file_exists(record.file_name) is False:
+        logger.info("File %s not found in cache, downloading from S3", record.file_name)
         content = s3_client.download(record.object_key)
         record.local_path = cache.save_file(record.file_name, content)
         record.cache_timestamp = int(pathlib.Path(record.local_path).stat().st_mtime)
+        logger.info("Saved file %s at time %d", record.local_path, record.cache_timestamp)
         background_tasks.add_task(db_client.update_metadata, record)
-
+    logger.info("Serving file %s from cache", record.file_name)
     return FileResponse(path=record.local_path, filename=record.file_name)
 
 
@@ -90,6 +95,7 @@ async def get_file_metadata(
 @app.get("/files")
 async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]) -> list[FileMetadata]:
     raw_metadata = db_client.get_all_metadata()
+    logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
@@ -97,6 +103,7 @@ async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)
 @app.get("/files/search")
 async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], tag: str) -> list[FileMetadata]:
     raw_metadata = db_client.select_metadata_by_tag(tag)
+    logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
