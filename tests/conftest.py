@@ -1,4 +1,5 @@
 import os
+import pathlib
 from collections.abc import Generator
 from datetime import datetime
 from typing import Any
@@ -55,13 +56,13 @@ def _test_bucket(aws: S3Client) -> None:
 @pytest.fixture()
 def _bucket_w_camera_img(_test_bucket: None) -> None:
     client = boto3.client("s3")
-    with open("tests/mock_data/camera.png", "rb") as f:
+    with pathlib.Path("tests/mock_data/camera.png").open("rb") as f:
         client.put_object(Bucket="test-bucket", Key="camera.png", Body=f.read())
 
 
 @pytest.fixture(scope="session")
 def camera_img() -> bytes:
-    with open("tests/mock_data/camera.png", "rb") as f:
+    with pathlib.Path("tests/mock_data/camera.png").open("rb") as f:
         return f.read()
 
 

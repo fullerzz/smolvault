@@ -1,15 +1,20 @@
-import os
+import pathlib
 
 
 class CacheManager:
     def __init__(self, cache_dir: str) -> None:
-        self.cache_dir = cache_dir
+        self.cache_dir = pathlib.Path(cache_dir)
 
     def file_exists(self, filename: str) -> bool:
-        return os.path.exists(os.path.join(self.cache_dir, filename))
+        file_path = self.cache_dir / filename
+        return file_path.exists()
 
     def save_file(self, filename: str, data: bytes) -> str:
-        file_path = os.path.join(self.cache_dir, filename)
-        with open(file_path, "wb") as f:
+        file_path = self.cache_dir / filename
+        with file_path.open("wb") as f:
             f.write(data)
-        return file_path
+        return file_path.as_posix()
+
+    def delete_file(self, local_path: str) -> None:
+        file_path = pathlib.Path(local_path)
+        file_path.unlink(missing_ok=True)
