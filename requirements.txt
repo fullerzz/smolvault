@@ -445,9 +445,9 @@ typer==0.12.3 ; python_version >= "3.11" and python_version < "4.0" \
 typing-extensions==4.12.2 ; python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d \
     --hash=sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8
-uvicorn[standard]==0.30.1 ; python_version >= "3.11" and python_version < "4.0" \
-    --hash=sha256:cd17daa7f3b9d7a24de3617820e634d0933b69eed8e33a516071174427238c81 \
-    --hash=sha256:d46cd8e0fd80240baffbcd9ec1012a712938754afcf81bce56c024c1656aece8
+uvicorn[standard]==0.30.3 ; python_version >= "3.11" and python_version < "4.0" \
+    --hash=sha256:0d114d0831ff1adbf231d358cbf42f17333413042552a624ea6a9b4c33dcfd81 \
+    --hash=sha256:94a3608da0e530cea8f69683aa4126364ac18e3826b6630d1a65f4638aade503
 uvloop==0.19.0 ; (sys_platform != "win32" and sys_platform != "cygwin") and platform_python_implementation != "PyPy" and python_version >= "3.11" and python_version < "4.0" \
     --hash=sha256:0246f4fd1bf2bf702e06b0d45ee91677ee5c31242f39aab4ea6fe0c51aedd0fd \
     --hash=sha256:02506dc23a5d90e04d4f65c7791e65cf44bd91b37f24cfc3ef6cf2aff05dc7ec \

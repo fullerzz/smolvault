@@ -44,7 +44,7 @@ async def test_get_file(
     await client.post(
         "/file/upload", files={"file": (filename, camera_img, "image/png")}, data={"tags": "camera,photo"}
     )
-    response = await client.get(f"/file/{filename}")
+    response = await client.get("/file/original", params={"filename": filename})
     assert response.status_code == 200
     assert response.content == camera_img
 
@@ -54,6 +54,6 @@ async def test_get_file(
 async def test_get_file_not_found(
     client: AsyncClient,
 ) -> None:
-    response = await client.get("/file/nonexistant-file.png")
+    response = await client.get("/file/original", params={"filename": "nonexistant-file.png"})
     assert response.status_code == 404
     assert response.json() == {"error": "File not found"}
