@@ -18,7 +18,7 @@ from sqlmodel import SQLModel, create_engine
 
 class TestDatabaseClient(DatabaseClient):
     def __init__(self) -> None:
-        self.engine = create_engine("sqlite:///test.db", echo=True, connect_args={"check_same_thread": False})
+        self.engine = create_engine("sqlite:///test.db", echo=False, connect_args={"check_same_thread": False})
         SQLModel.metadata.create_all(self.engine)
 
 
