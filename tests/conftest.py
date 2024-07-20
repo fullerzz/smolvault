@@ -73,7 +73,7 @@ def file_metadata_record() -> FileMetadataRecord:
         file_sha256="ddf2ef1fce9d6289051b8415d9b6ace81743288db15570179e409b3169055055",
         size=19467,
         object_key="camera.png",
-        link="http://pi.local:8000/file/camera.png",
+        link="http://pi.local:8000/file/original?filename=camera.png",
         upload_timestamp=datetime.now(ZoneInfo("UTC")).isoformat(),
         tags="camera,photo",
     )
