@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 import boto3
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
@@ -18,14 +18,14 @@ from sqlmodel import SQLModel, create_engine
 
 class TestDatabaseClient(DatabaseClient):
     def __init__(self) -> None:
-        self.engine = create_engine("sqlite:///test.db", echo=True, connect_args={"check_same_thread": False})
+        self.engine = create_engine("sqlite:///test.db", echo=False, connect_args={"check_same_thread": False})
         SQLModel.metadata.create_all(self.engine)
 
 
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
-    return AsyncClient(app=app, base_url="http://testserver", timeout=5.0)
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
 
 
 @pytest.fixture(scope="session")
@@ -73,7 +73,7 @@ def file_metadata_record() -> FileMetadataRecord:
         file_sha256="ddf2ef1fce9d6289051b8415d9b6ace81743288db15570179e409b3169055055",
         size=19467,
         object_key="camera.png",
-        link="http://pi.local:8000/file/camera.png",
+        link="http://pi.local:8000/file/original?filename=camera.png",
         upload_timestamp=datetime.now(ZoneInfo("UTC")).isoformat(),
         tags="camera,photo",
     )

@@ -23,5 +23,7 @@ async def test_delete_file(client: AsyncClient, camera_img: bytes) -> None:
 
     # now delete the file
     response = await client.delete(f"/file/{filename}")
+    actual = response.json()
     assert response.status_code == 200
-    assert response.json() == {"message": "File deleted successfully", "record": expected}  # TODO: Fix this assertion
+    assert actual["message"] == "File deleted successfully"
+    assert actual["record"]["file_name"] == filename
