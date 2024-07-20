@@ -1,12 +1,12 @@
 import json
 import logging
-import os
+import pathlib
 import sys
 import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, File, Form, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 
@@ -62,15 +62,17 @@ async def upload_file(
 
 
 @app.get("/file/{name}")
-async def get_file(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str) -> Response:
+async def get_file(
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
+) -> Response:
     record = db_client.get_metadata(urllib.parse.unquote(name))
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     if record.local_path is None or cache.file_exists(record.local_path) is False:
         content = s3_client.download(record.object_key)
         record.local_path = cache.save_file(record.file_name, content)
-        record.cache_timestamp = int(os.path.getmtime(record.local_path))
-        db_client.update_metadata(record)
+        record.cache_timestamp = int(pathlib.Path(record.local_path).stat().st_mtime)
+        background_tasks.add_task(db_client.update_metadata, record)
 
     return FileResponse(path=record.local_path, filename=record.file_name)
 
@@ -118,12 +120,16 @@ async def update_file_tags(
 
 
 @app.delete("/file/{name}")
-async def delete_file(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str) -> Response:
+async def delete_file(
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
+) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     s3_client.delete(record.object_key)
     db_client.delete_metadata(record)
+    if record.local_path:
+        background_tasks.add_task(cache.delete_file, record.local_path)
     return Response(
         content=json.dumps({"message": "File deleted successfully", "record": record.model_dump()}),
         status_code=200,

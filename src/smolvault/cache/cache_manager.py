@@ -15,7 +15,6 @@ class CacheManager:
             f.write(data)
         return file_path.as_posix()
 
-    def delete_file(self, filename: str) -> None:
-        file_path = self.cache_dir / filename
-        if file_path.exists():
-            file_path.unlink()
+    def delete_file(self, local_path: str) -> None:
+        file_path = pathlib.Path(local_path)
+        file_path.unlink(missing_ok=True)
