@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class S3Client:
     def __init__(self, bucket_name: str) -> None:
-        logger.info(f"Creating S3 client for bucket {bucket_name}")
+        logger.info("Creating S3 client for bucket %s", bucket_name)
         self.settings = get_settings()
         self.bucket_name = bucket_name
         self.session = boto3.Session()
@@ -31,4 +31,4 @@ class S3Client:
 
     def delete(self, key: str) -> None:
         self.client.delete_object(Bucket=self.bucket_name, Key=key)
-        logger.info(f"Deleted file {key} from S3")
+        logger.info("Deleted file %s from S3", key)

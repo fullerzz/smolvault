@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 
 import boto3
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
@@ -25,7 +25,7 @@ class TestDatabaseClient(DatabaseClient):
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
-    return AsyncClient(app=app, base_url="http://testserver", timeout=5.0)
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
 
 
 @pytest.fixture(scope="session")

@@ -25,6 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="smolvault")
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,7 +33,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 settings: Settings = get_settings()
 s3_client = S3Client(bucket_name=settings.smolvault_bucket)
