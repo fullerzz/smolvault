@@ -6,12 +6,14 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.security import OAuth2PasswordRequestForm
 
-from smolvault.auth import User, get_current_user
+from smolvault.auth.decoder import get_current_user
+from smolvault.auth.models import User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -45,6 +47,24 @@ cache = CacheManager(cache_dir=settings.smolvault_cache)
 @app.get("/")
 async def read_root(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     return current_user
+
+
+@app.post("/token")
+async def login(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+) -> dict[str, str]:
+    user = db_client.get_user(form_data.username)
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    hashed_password = f"hash+{form_data.password}"
+    if hashed_password != user.hashed_password:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    return {"access_token": user.username, "token_type": "bearer"}
 
 
 @app.post("/file/upload")

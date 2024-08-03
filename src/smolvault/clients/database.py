@@ -6,6 +6,15 @@ from smolvault.config import get_settings
 from smolvault.models import FileUploadDTO
 
 
+class UserInfo(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    username: str = Field(index=True)
+    hashed_password: str
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
+
+
 class FileMetadataRecord(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     file_name: str = Field(index=True)
@@ -84,3 +93,8 @@ class DatabaseClient:
             for tag in tags:
                 session.delete(tag)
             session.commit()
+
+    def get_user(self, username: str) -> UserInfo | None:
+        with Session(self.engine) as session:
+            statement = select(UserInfo).where(UserInfo.username == username)
+            return session.exec(statement).first()
