@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 
+from smolvault.auth import User, get_current_user
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -25,6 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="smolvault")
+
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
@@ -34,14 +36,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 settings: Settings = get_settings()
 s3_client = S3Client(bucket_name=settings.smolvault_bucket)
 cache = CacheManager(cache_dir=settings.smolvault_cache)
 
 
 @app.get("/")
-async def read_root() -> dict[str, str]:
-    return {"Hello": "World"}
+async def read_root(current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    return current_user
 
 
 @app.post("/file/upload")
