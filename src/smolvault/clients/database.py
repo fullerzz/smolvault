@@ -9,11 +9,10 @@ from smolvault.models import FileUploadDTO
 
 class UserInfo(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    username: str = Field(index=True)
+    username: str = Field(index=True, unique=True)
     hashed_password: str
     email: str | None = None
     full_name: str | None = None
-    disabled: bool | None = None
 
 
 class FileMetadataRecord(SQLModel, table=True):
