@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
+from smolvault.auth.models import NewUserDTO
 from smolvault.config import get_settings
 from smolvault.models import FileUploadDTO
 
@@ -98,3 +99,11 @@ class DatabaseClient:
         with Session(self.engine) as session:
             statement = select(UserInfo).where(UserInfo.username == username)
             return session.exec(statement).first()
+
+    def add_user(self, user: NewUserDTO) -> None:
+        user_info = UserInfo(
+            username=user.username, hashed_password=user.hashed_password, email=user.email, full_name=user.full_name
+        )
+        with Session(self.engine) as session:
+            session.add(user_info)
+            session.commit()

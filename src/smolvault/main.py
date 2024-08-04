@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from smolvault.auth.decoder import get_current_user
-from smolvault.auth.models import User
+from smolvault.auth.models import NewUserDTO, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -47,6 +47,14 @@ cache = CacheManager(cache_dir=settings.smolvault_cache)
 @app.get("/")
 async def read_root(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     return current_user
+
+
+@app.post("/users/new")
+async def create_user(
+    user: NewUserDTO, db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
+) -> dict[str, str]:
+    db_client.add_user(user)
+    return {"username": user.username}
 
 
 @app.post("/token")
