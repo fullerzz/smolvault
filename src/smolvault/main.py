@@ -6,6 +6,7 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
+import bcrypt
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -69,8 +70,7 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    hashed_password = f"hash+{form_data.password}"
-    if hashed_password != user.hashed_password:
+    if bcrypt.checkpw(form_data.password.encode(), user.hashed_password.encode()) is False:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
 
