@@ -20,3 +20,12 @@ class NewUserDTO(BaseModel):
     @cached_property
     def hashed_password(self) -> str:
         return bcrypt.hashpw(self.password.get_secret_value().encode(), bcrypt.gensalt()).decode()
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

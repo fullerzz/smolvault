@@ -6,15 +6,14 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-import bcrypt
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from smolvault.auth.decoder import get_current_user
-from smolvault.auth.models import NewUserDTO, User
+from smolvault.auth.decoder import authenticate_user, create_access_token, get_current_user
+from smolvault.auth.models import NewUserDTO, Token, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -59,20 +58,19 @@ async def create_user(
 
 
 @app.post("/token")
-async def login(
+async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
-) -> dict[str, str]:
-    user = db_client.get_user(form_data.username)
+) -> Token:
+    user = authenticate_user(db_client, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=400,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if bcrypt.checkpw(form_data.password.encode(), user.hashed_password.encode()) is False:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-    return {"access_token": user.username, "token_type": "bearer"}
+    access_token = create_access_token(data={"sub": user.username})
+    return access_token
 
 
 @app.post("/file/upload")

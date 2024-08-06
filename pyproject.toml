@@ -16,6 +16,7 @@ python-multipart = "^0.0.9"
 python-dotenv = "^1.0.1"
 pydantic-settings = "^2.4.0"
 hypercorn = "^0.17.3"
+pyjwt = {extras = ["crypto"], version = "^2.9.0"}
 bcrypt = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -28,6 +29,8 @@ pytest-asyncio = "^0.23.7"
 moto = {extras = ["all"], version = "^5.0.12"}
 invoke = "^2.2.0"
 rich = "^13.7.1"
+types-pyjwt = "^1.7.1"
+types-passlib = "^1.7.7.20240327"
 
 [tool.ruff]
 line-length = 120
