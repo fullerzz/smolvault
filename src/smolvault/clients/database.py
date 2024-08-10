@@ -26,6 +26,7 @@ class FileMetadataRecord(SQLModel, table=True):
     tags: str | None
     local_path: str | None = None
     cache_timestamp: int | None = None
+    user_id: int | None = Field(default=None, foreign_key="userinfo.id")
 
 
 class FileTag(SQLModel, table=True):
