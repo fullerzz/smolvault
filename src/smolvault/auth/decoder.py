@@ -30,8 +30,8 @@ def decode_token(token: str, db_client: DatabaseClient) -> UserInfo | None:
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> Token:
     to_encode = data.copy()
-    if expires_delta:  # noqa: SIM108
-        expire = datetime.now(ZoneInfo("UTC"))
+    if expires_delta:
+        expire = datetime.now(ZoneInfo("UTC")) + expires_delta
     else:
         expire = datetime.now(ZoneInfo("UTC")) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
