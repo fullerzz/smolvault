@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     smolvault_bucket: str
     smolvault_db: str
     smolvault_cache: str
+    auth_secret_key: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

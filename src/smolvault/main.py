@@ -6,11 +6,14 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
+from fastapi.security import OAuth2PasswordRequestForm
 
+from smolvault.auth.decoder import authenticate_user, create_access_token, get_current_user
+from smolvault.auth.models import NewUserDTO, Token, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
@@ -25,6 +28,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="smolvault")
+
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
@@ -34,18 +38,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 settings: Settings = get_settings()
 s3_client = S3Client(bucket_name=settings.smolvault_bucket)
 cache = CacheManager(cache_dir=settings.smolvault_cache)
 
 
 @app.get("/")
-async def read_root() -> dict[str, str]:
-    return {"Hello": "World"}
+async def read_root(current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    return current_user
+
+
+@app.post("/users/new")
+async def create_user(
+    user: NewUserDTO, db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
+) -> dict[str, str]:
+    db_client.add_user(user)
+    return {"username": user.username}
+
+
+@app.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+) -> Token:
+    user = authenticate_user(db_client, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user.username})
+    return access_token
 
 
 @app.post("/file/upload")
 async def upload_file(
+    current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     file: Annotated[UploadFile, File()],
     tags: str | None = Form(default=None),
@@ -54,8 +84,10 @@ async def upload_file(
     if file.filename is None:
         logger.error("Filename not received in request")
         raise ValueError("Filename is required")
-    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
-    logger.info("Uploading file to S3 with name %s", file_upload.name)
+    file_upload = FileUploadDTO(
+        name=file.filename, size=len(contents), content=contents, tags=tags, user_id=current_user.id
+    )
+    logger.info("Uploading file to S3 with name %s uploaded by %s", file_upload.name, current_user.username)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(
@@ -67,9 +99,12 @@ async def upload_file(
 
 @app.get("/file/original")
 async def get_file(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], filename: str, background_tasks: BackgroundTasks
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    filename: str,
+    background_tasks: BackgroundTasks,
 ) -> Response:
-    record = db_client.get_metadata(filename)
+    record = db_client.get_metadata(filename, current_user.id)
     if record is None:
         logger.info("File not found: %s", filename)
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
@@ -86,25 +121,34 @@ async def get_file(
 
 @app.get("/file/{name}/metadata")
 async def get_file_metadata(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
 ) -> FileMetadata | None:
-    record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name))
+    record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name), current_user.id)
     if record:
         return FileMetadata.model_validate(record.model_dump())
     return None
 
 
 @app.get("/files")
-async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]) -> list[FileMetadata]:
-    raw_metadata = db_client.get_all_metadata()
+async def get_files(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+) -> list[FileMetadata]:
+    raw_metadata = db_client.get_all_metadata(current_user.id)
     logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
 
 
 @app.get("/files/search")
-async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], tag: str) -> list[FileMetadata]:
-    raw_metadata = db_client.select_metadata_by_tag(tag)
+async def search_files(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    tag: str,
+) -> list[FileMetadata]:
+    raw_metadata = db_client.select_metadata_by_tag(tag, current_user.id)
     logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
@@ -112,9 +156,12 @@ async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClie
 
 @app.patch("/file/{name}/tags")
 async def update_file_tags(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, tags: FileTagsDTO
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
+    tags: FileTagsDTO,
 ) -> Response:
-    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
 
@@ -130,13 +177,16 @@ async def update_file_tags(
 
 @app.delete("/file/{name}")
 async def delete_file(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
+    background_tasks: BackgroundTasks,
 ) -> Response:
-    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     s3_client.delete(record.object_key)
-    db_client.delete_metadata(record)
+    db_client.delete_metadata(record, current_user.id)
     if record.local_path:
         background_tasks.add_task(cache.delete_file, record.local_path)
     return Response(

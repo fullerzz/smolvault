@@ -8,12 +8,17 @@ from smolvault.models import FileUploadDTO
 
 @pytest.mark.asyncio()
 @pytest.mark.usefixtures("_test_bucket")
-async def test_upload_file(client: AsyncClient, camera_img: bytes) -> None:
+async def test_upload_file(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
-    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags="camera,photo")
+    expected_obj = FileUploadDTO(
+        name=filename, size=len(camera_img), content=camera_img, tags="camera,photo", user_id=1
+    )
     expected = expected_obj.model_dump(exclude={"content", "upload_timestamp", "tags"})
     response = await client.post(
-        "/file/upload", files={"file": (filename, camera_img, "image/png")}, data={"tags": "camera,photo"}
+        "/file/upload",
+        files={"file": (filename, camera_img, "image/png")},
+        data={"tags": "camera,photo"},
+        headers={"Authorization": f"Bearer {access_token}"},
     )
     actual: dict[str, Any] = response.json()
     actual.pop("upload_timestamp")
@@ -23,12 +28,16 @@ async def test_upload_file(client: AsyncClient, camera_img: bytes) -> None:
 
 @pytest.mark.asyncio()
 @pytest.mark.usefixtures("_test_bucket")
-async def test_upload_file_no_tags(client: AsyncClient, camera_img: bytes) -> None:
+async def test_upload_file_no_tags(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
-    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags=None)
+    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags=None, user_id=1)
     expected = expected_obj.model_dump(exclude={"content", "upload_timestamp", "tags"})
 
-    response = await client.post("/file/upload", files={"file": (filename, camera_img, "image/png")})
+    response = await client.post(
+        "/file/upload",
+        files={"file": (filename, camera_img, "image/png")},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     actual: dict[str, Any] = response.json()
     actual.pop("upload_timestamp")
 
