@@ -10,6 +10,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
+from smolvault.auth.models import NewUserDTO
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
 from smolvault.main import app
 from smolvault.models import FileMetadata
@@ -22,10 +23,26 @@ class TestDatabaseClient(DatabaseClient):
         SQLModel.metadata.create_all(self.engine)
 
 
+@pytest.fixture(scope="session")
+def _user() -> None:
+    client = TestDatabaseClient()
+    user = NewUserDTO(username="testuser", password="testpassword", email="test@email.com", full_name="John Smith")  # type: ignore # noqa: S106
+    client.add_user(user)
+
+
 @pytest.fixture(scope="module")
-def client() -> AsyncClient:
+def client(_user: None) -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
+
+
+@pytest.fixture()
+async def access_token(client: AsyncClient) -> str:
+    response = await client.post(
+        "/token",
+        data={"username": "testuser", "password": "testpassword"},
+    )
+    return response.json()["access_token"]
 
 
 @pytest.fixture(scope="session")

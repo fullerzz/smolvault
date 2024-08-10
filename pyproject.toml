@@ -32,6 +32,9 @@ rich = "^13.7.1"
 types-pyjwt = "^1.7.1"
 types-passlib = "^1.7.7.20240327"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
 [tool.ruff]
 line-length = 120
 indent-width = 4

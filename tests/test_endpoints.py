@@ -9,10 +9,10 @@ from smolvault.models import FileMetadata
 
 
 @pytest.mark.asyncio()
-async def test_read_root(client: AsyncClient) -> None:
-    response = await client.get("/")
+async def test_read_root(client: AsyncClient, access_token: str) -> None:
+    response = await client.get("/", headers={"Authorization": f"Bearer {access_token}"})
     assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
+    assert response.json() == {"email": "test@email.com", "full_name": "John Smith", "username": "testuser"}
 
 
 @pytest.mark.asyncio()
