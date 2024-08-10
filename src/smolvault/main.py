@@ -75,6 +75,7 @@ async def login_for_access_token(
 
 @app.post("/file/upload")
 async def upload_file(
+    current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     file: Annotated[UploadFile, File()],
     tags: str | None = Form(default=None),
@@ -96,7 +97,10 @@ async def upload_file(
 
 @app.get("/file/original")
 async def get_file(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], filename: str, background_tasks: BackgroundTasks
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    filename: str,
+    background_tasks: BackgroundTasks,
 ) -> Response:
     record = db_client.get_metadata(filename)
     if record is None:
@@ -115,7 +119,9 @@ async def get_file(
 
 @app.get("/file/{name}/metadata")
 async def get_file_metadata(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
 ) -> FileMetadata | None:
     record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name))
     if record:
@@ -124,7 +130,10 @@ async def get_file_metadata(
 
 
 @app.get("/files")
-async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]) -> list[FileMetadata]:
+async def get_files(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+) -> list[FileMetadata]:
     raw_metadata = db_client.get_all_metadata()
     logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
@@ -132,7 +141,11 @@ async def get_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)
 
 
 @app.get("/files/search")
-async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], tag: str) -> list[FileMetadata]:
+async def search_files(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    tag: str,
+) -> list[FileMetadata]:
     raw_metadata = db_client.select_metadata_by_tag(tag)
     logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
@@ -141,7 +154,10 @@ async def search_files(db_client: Annotated[DatabaseClient, Depends(DatabaseClie
 
 @app.patch("/file/{name}/tags")
 async def update_file_tags(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, tags: FileTagsDTO
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
+    tags: FileTagsDTO,
 ) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name)
     if record is None:
@@ -159,7 +175,10 @@ async def update_file_tags(
 
 @app.delete("/file/{name}")
 async def delete_file(
-    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)], name: str, background_tasks: BackgroundTasks
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    name: str,
+    background_tasks: BackgroundTasks,
 ) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name)
     if record is None:

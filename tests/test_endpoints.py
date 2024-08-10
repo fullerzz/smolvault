@@ -22,12 +22,13 @@ async def test_list_files(
     monkeypatch: pytest.MonkeyPatch,
     file_metadata_record: FileMetadataRecord,
     file_metadata: FileMetadata,
+    access_token: str,
 ) -> None:
     def mock_get_all_files(*args: Any, **kwargs: Any) -> Sequence[FileMetadataRecord]:
         return [file_metadata_record]
 
     monkeypatch.setattr(DatabaseClient, "get_all_metadata", mock_get_all_files)
-    response = await client.get("/files")
+    response = await client.get("/files", headers={"Authorization": f"Bearer {access_token}"})
     assert response.status_code == 200
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
 
@@ -39,21 +40,29 @@ async def test_get_file(
     monkeypatch: pytest.MonkeyPatch,
     file_metadata_record: FileMetadataRecord,
     camera_img: bytes,
+    access_token: str,
 ) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
     await client.post(
-        "/file/upload", files={"file": (filename, camera_img, "image/png")}, data={"tags": "camera,photo"}
+        "/file/upload",
+        files={"file": (filename, camera_img, "image/png")},
+        data={"tags": "camera,photo"},
+        headers={"Authorization": f"Bearer {access_token}"},
     )
-    response = await client.get("/file/original", params={"filename": filename})
+    response = await client.get(
+        "/file/original", params={"filename": filename}, headers={"Authorization": f"Bearer {access_token}"}
+    )
     assert response.status_code == 200
     assert response.content == camera_img
 
 
 @pytest.mark.asyncio()
 @pytest.mark.usefixtures("_test_bucket")
-async def test_get_file_not_found(
-    client: AsyncClient,
-) -> None:
-    response = await client.get("/file/original", params={"filename": "nonexistant-file.png"})
+async def test_get_file_not_found(client: AsyncClient, access_token: str) -> None:
+    response = await client.get(
+        "/file/original",
+        params={"filename": "nonexistant-file.png"},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
     assert response.status_code == 404
     assert response.json() == {"error": "File not found"}
