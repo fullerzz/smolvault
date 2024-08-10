@@ -104,7 +104,7 @@ async def get_file(
     filename: str,
     background_tasks: BackgroundTasks,
 ) -> Response:
-    record = db_client.get_metadata(filename)
+    record = db_client.get_metadata(filename, current_user.id)
     if record is None:
         logger.info("File not found: %s", filename)
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
@@ -125,7 +125,7 @@ async def get_file_metadata(
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     name: str,
 ) -> FileMetadata | None:
-    record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name))
+    record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name), current_user.id)
     if record:
         return FileMetadata.model_validate(record.model_dump())
     return None
@@ -161,7 +161,7 @@ async def update_file_tags(
     name: str,
     tags: FileTagsDTO,
 ) -> Response:
-    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
 
@@ -182,7 +182,7 @@ async def delete_file(
     name: str,
     background_tasks: BackgroundTasks,
 ) -> Response:
-    record: FileMetadataRecord | None = db_client.get_metadata(name)
+    record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     s3_client.delete(record.object_key)

@@ -26,7 +26,7 @@ class FileMetadataRecord(SQLModel, table=True):
     tags: str | None
     local_path: str | None = None
     cache_timestamp: int | None = None
-    user_id: int | None = Field(default=None, foreign_key="userinfo.id")
+    user_id: int | None = Field(default=None, foreign_key="userinfo.id", index=True)
 
 
 class FileTag(SQLModel, table=True):
@@ -65,9 +65,13 @@ class DatabaseClient:
             results = session.exec(statement)
             return results.fetchall()
 
-    def get_metadata(self, filename: str) -> FileMetadataRecord | None:
+    def get_metadata(self, filename: str, user_id: int) -> FileMetadataRecord | None:
         with Session(self.engine) as session:
-            statement = select(FileMetadataRecord).where(FileMetadataRecord.file_name == filename)
+            statement = (
+                select(FileMetadataRecord)
+                .where(FileMetadataRecord.file_name == filename)
+                .where(FileMetadataRecord.user_id == user_id)
+            )
             return session.exec(statement).first()
 
     def select_metadata_by_tag(self, tag: str) -> Sequence[FileMetadataRecord]:
