@@ -50,6 +50,7 @@ class DatabaseClient:
             link=file_upload.link,
             upload_timestamp=file_upload.upload_timestamp,
             tags=file_upload.tags,
+            user_id=file_upload.user_id,
         )
         with Session(self.engine) as session:
             session.add(file_metadata)
@@ -107,3 +108,4 @@ class DatabaseClient:
         with Session(self.engine) as session:
             session.add(user_info)
             session.commit()
+            session.refresh(user_info)

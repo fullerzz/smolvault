@@ -11,7 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
 from smolvault.auth.models import NewUserDTO
-from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag  # noqa: F401
+from smolvault.clients.database import DatabaseClient, FileMetadataRecord, FileTag, UserInfo  # noqa: F401
 from smolvault.main import app
 from smolvault.models import FileMetadata
 from sqlmodel import SQLModel, create_engine

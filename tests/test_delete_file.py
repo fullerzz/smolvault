@@ -11,7 +11,9 @@ from smolvault.models import FileUploadDTO
 async def test_delete_file(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     # first upload the file
     filename = f"{uuid4().hex[:6]}-camera.png"
-    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags="camera,photo")
+    expected_obj = FileUploadDTO(
+        name=filename, size=len(camera_img), content=camera_img, tags="camera,photo", user_id=1
+    )
     expected = expected_obj.model_dump(exclude={"content", "upload_timestamp", "tags"})
     response = await client.post(
         "/file/upload",

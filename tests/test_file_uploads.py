@@ -10,7 +10,9 @@ from smolvault.models import FileUploadDTO
 @pytest.mark.usefixtures("_test_bucket")
 async def test_upload_file(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
-    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags="camera,photo")
+    expected_obj = FileUploadDTO(
+        name=filename, size=len(camera_img), content=camera_img, tags="camera,photo", user_id=1
+    )
     expected = expected_obj.model_dump(exclude={"content", "upload_timestamp", "tags"})
     response = await client.post(
         "/file/upload",
@@ -28,7 +30,7 @@ async def test_upload_file(client: AsyncClient, camera_img: bytes, access_token:
 @pytest.mark.usefixtures("_test_bucket")
 async def test_upload_file_no_tags(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
-    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags=None)
+    expected_obj = FileUploadDTO(name=filename, size=len(camera_img), content=camera_img, tags=None, user_id=1)
     expected = expected_obj.model_dump(exclude={"content", "upload_timestamp", "tags"})
 
     response = await client.post(

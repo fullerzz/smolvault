@@ -73,4 +73,9 @@ async def get_current_user(
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return User(username=user.username, email=user.email, full_name=user.full_name)
+    if user.id is None:
+        raise HTTPException(
+            status_code=500,
+            detail="Corrputed user data",
+        )
+    return User(id=user.id, username=user.username, email=user.email, full_name=user.full_name)

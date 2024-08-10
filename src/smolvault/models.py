@@ -11,6 +11,7 @@ class FileUploadDTO(BaseModel):
     name: str
     size: int
     content: bytes
+    user_id: int
     upload_timestamp: str = Field(default_factory=lambda: datetime.now(ZoneInfo("UTC")).isoformat())
     tags: str | None  # comma separated tags
 

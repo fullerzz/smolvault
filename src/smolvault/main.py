@@ -84,8 +84,10 @@ async def upload_file(
     if file.filename is None:
         logger.error("Filename not received in request")
         raise ValueError("Filename is required")
-    file_upload = FileUploadDTO(name=file.filename, size=len(contents), content=contents, tags=tags)
-    logger.info("Uploading file to S3 with name %s", file_upload.name)
+    file_upload = FileUploadDTO(
+        name=file.filename, size=len(contents), content=contents, tags=tags, user_id=current_user.id
+    )
+    logger.info("Uploading file to S3 with name %s uploaded by %s", file_upload.name, current_user.username)
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(
