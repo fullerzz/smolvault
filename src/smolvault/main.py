@@ -136,7 +136,7 @@ async def get_files(
     current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
 ) -> list[FileMetadata]:
-    raw_metadata = db_client.get_all_metadata()
+    raw_metadata = db_client.get_all_metadata(current_user.id)
     logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
@@ -148,7 +148,7 @@ async def search_files(
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     tag: str,
 ) -> list[FileMetadata]:
-    raw_metadata = db_client.select_metadata_by_tag(tag)
+    raw_metadata = db_client.select_metadata_by_tag(tag, current_user.id)
     logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
@@ -186,7 +186,7 @@ async def delete_file(
     if record is None:
         return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
     s3_client.delete(record.object_key)
-    db_client.delete_metadata(record)
+    db_client.delete_metadata(record, current_user.id)
     if record.local_path:
         background_tasks.add_task(cache.delete_file, record.local_path)
     return Response(

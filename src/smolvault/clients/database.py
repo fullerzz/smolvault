@@ -59,9 +59,9 @@ class DatabaseClient:
                 session.add(FileTag(tag_name=tag, file_id=file_metadata.id))
             session.commit()
 
-    def get_all_metadata(self) -> Sequence[FileMetadataRecord]:
+    def get_all_metadata(self, user_id: int) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
-            statement = select(FileMetadataRecord)
+            statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
             results = session.exec(statement)
             return results.fetchall()
 
@@ -74,12 +74,13 @@ class DatabaseClient:
             )
             return session.exec(statement).first()
 
-    def select_metadata_by_tag(self, tag: str) -> Sequence[FileMetadataRecord]:
+    def select_metadata_by_tag(self, tag: str, user_id: int) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = (
                 select(FileMetadataRecord)
                 .where(FileTag.file_id == FileMetadataRecord.id)
                 .where(FileTag.tag_name == tag)
+                .where(FileMetadataRecord.user_id == user_id)
             )
             results = session.exec(statement)
             return results.fetchall()
@@ -90,11 +91,11 @@ class DatabaseClient:
             session.commit()
             session.refresh(record)
 
-    def delete_metadata(self, record: FileMetadataRecord) -> None:
+    def delete_metadata(self, record: FileMetadataRecord, user_id: int) -> None:
         with Session(self.engine) as session:
             session.delete(record)
             session.commit()
-            statement = select(FileTag).where(FileTag.file_id == record.id)
+            statement = select(FileTag).where(FileTag.file_id == record.id).where(FileMetadataRecord.user_id == user_id)
             tags = session.exec(statement)
             for tag in tags:
                 session.delete(tag)
