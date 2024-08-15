@@ -63,23 +63,23 @@ tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "aws-sam-translator"
-version = "1.89.0"
+version = "1.90.0"
 description = "AWS SAM Translator is a library that transform SAM templates into AWS CloudFormation templates"
 optional = false
 python-versions = "!=4.0,<=4.0,>=3.8"
 files = [
-    {file = "aws_sam_translator-1.89.0-py3-none-any.whl", hash = "sha256:843be1b5ca7634f700ad0c844a7e0dc42858f35da502e91691473eadd1731ded"},
-    {file = "aws_sam_translator-1.89.0.tar.gz", hash = "sha256:fff1005d0b1f3cb511d0ac7e85f54af06afc9d9e433df013a2338d7a0168d174"},
+    {file = "aws_sam_translator-1.90.0-py3-none-any.whl", hash = "sha256:25f1d5be7980ff57299977ca0bb807caf7b5ea474646bb0fc96e2541f34a20b6"},
+    {file = "aws_sam_translator-1.90.0.tar.gz", hash = "sha256:35e70accfe4ead2cc4e6df104a991f94a4fc4aa3b1dc4d460dded77cf30f670c"},
 ]
 
 [package.dependencies]
 boto3 = ">=1.19.5,<2.dev0"
 jsonschema = ">=3.2,<5"
-pydantic = ">=1.8,<3"
+pydantic = ">=1.8,<1.10.15 || >1.10.15,<1.10.17 || >1.10.17,<3"
 typing-extensions = ">=4.4"
 
 [package.extras]
-dev = ["black (==24.3.0)", "boto3 (>=1.23,<2)", "boto3-stubs[appconfig,serverlessrepo] (>=1.19.5,<2.dev0)", "coverage (>=5.3,<8)", "dateparser (>=1.1,<2.0)", "mypy (>=1.3.0,<1.4.0)", "parameterized (>=0.7,<1.0)", "pytest (>=6.2,<8)", "pytest-cov (>=2.10,<5)", "pytest-env (>=0.6,<1)", "pytest-rerunfailures (>=9.1,<12)", "pytest-xdist (>=2.5,<4)", "pyyaml (>=6.0,<7.0)", "requests (>=2.28,<3.0)", "ruamel.yaml (==0.17.21)", "ruff (>=0.1.0,<0.2.0)", "tenacity (>=8.0,<9.0)", "types-PyYAML (>=6.0,<7.0)", "types-jsonschema (>=3.2,<4.0)"]
+dev = ["black (==24.3.0)", "boto3 (>=1.23,<2)", "boto3-stubs[appconfig,serverlessrepo] (>=1.19.5,<2.dev0)", "coverage (>=5.3,<8)", "dateparser (>=1.1,<2.0)", "mypy (>=1.3.0,<1.4.0)", "parameterized (>=0.7,<1.0)", "pytest (>=6.2,<8)", "pytest-cov (>=2.10,<5)", "pytest-env (>=0.6,<1)", "pytest-rerunfailures (>=9.1,<12)", "pytest-xdist (>=2.5,<4)", "pyyaml (>=6.0,<7.0)", "requests (>=2.28,<3.0)", "ruamel.yaml (==0.17.21)", "ruff (>=0.4.5,<0.5.0)", "tenacity (>=8.0,<9.0)", "types-PyYAML (>=6.0,<7.0)", "types-jsonschema (>=3.2,<4.0)"]
 
 [[package]]
 name = "aws-xray-sdk"
@@ -138,17 +138,17 @@ typecheck = ["mypy"]
 
 [[package]]
 name = "boto3"
-version = "1.34.158"
+version = "1.34.161"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.34.158-py3-none-any.whl", hash = "sha256:c29e9b7e1034e8734ccaffb9f2b3f3df2268022fd8a93d836604019f8759ce27"},
-    {file = "boto3-1.34.158.tar.gz", hash = "sha256:5b7b2ce0ec1e498933f600d29f3e1c641f8c44dd7e468c26795359d23d81fa39"},
+    {file = "boto3-1.34.161-py3-none-any.whl", hash = "sha256:4ef285334a0edc3047e27a04caf00f7742e32c0f03a361101e768014ac5709dd"},
+    {file = "boto3-1.34.161.tar.gz", hash = "sha256:a872d8fdb3203c1eb0b12fa9e9d879e6f7fd02983a485f02189e6d5914ccd834"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.158,<1.35.0"
+botocore = ">=1.34.161,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -157,13 +157,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "boto3-stubs"
-version = "1.34.158"
-description = "Type annotations for boto3 1.34.158 generated with mypy-boto3-builder 7.25.0"
+version = "1.34.161"
+description = "Type annotations for boto3 1.34.161 generated with mypy-boto3-builder 7.26.0"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3_stubs-1.34.158-py3-none-any.whl", hash = "sha256:09801d3483b4325e14825579ccf3c44017c094559f22a5aafcce6fa9750cb939"},
-    {file = "boto3_stubs-1.34.158.tar.gz", hash = "sha256:00f102935993e0d090427ac792a4ec5390e4d670fac39c5b5cd43d99bd048dce"},
+    {file = "boto3_stubs-1.34.161-py3-none-any.whl", hash = "sha256:aff48426ed2dc03be038a1b8d0864f8ff1d6d7e0e024f9bd69ec8d0c78b4cf4c"},
+    {file = "boto3_stubs-1.34.161.tar.gz", hash = "sha256:58291c105030ab589cf30c02dfb48df1e23cbabdc6e9e0fc3446982a83280edc"},
 ]
 
 [package.dependencies]
@@ -221,7 +221,7 @@ bedrock-agent = ["mypy-boto3-bedrock-agent (>=1.34.0,<1.35.0)"]
 bedrock-agent-runtime = ["mypy-boto3-bedrock-agent-runtime (>=1.34.0,<1.35.0)"]
 bedrock-runtime = ["mypy-boto3-bedrock-runtime (>=1.34.0,<1.35.0)"]
 billingconductor = ["mypy-boto3-billingconductor (>=1.34.0,<1.35.0)"]
-boto3 = ["boto3 (==1.34.158)", "botocore (==1.34.158)"]
+boto3 = ["boto3 (==1.34.161)", "botocore (==1.34.161)"]
 braket = ["mypy-boto3-braket (>=1.34.0,<1.35.0)"]
 budgets = ["mypy-boto3-budgets (>=1.34.0,<1.35.0)"]
 ce = ["mypy-boto3-ce (>=1.34.0,<1.35.0)"]
@@ -571,13 +571,13 @@ xray = ["mypy-boto3-xray (>=1.34.0,<1.35.0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.158"
+version = "1.34.161"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.158-py3-none-any.whl", hash = "sha256:0e6fceba1e39bfa8feeba70ba3ac2af958b3387df4bd3b5f2db3f64c1754c756"},
-    {file = "botocore-1.34.158.tar.gz", hash = "sha256:5934082e25ad726673afbf466092fb1223dafa250e6e756c819430ba6b1b3da5"},
+    {file = "botocore-1.34.161-py3-none-any.whl", hash = "sha256:6c606d2da6f62fde06880aff1190566af208875c29938b6b68741e607817975a"},
+    {file = "botocore-1.34.161.tar.gz", hash = "sha256:16381bfb786142099abf170ce734b95a402a3a7f8e4016358712ac333c5568b2"},
 ]
 
 [package.dependencies]
@@ -590,13 +590,13 @@ crt = ["awscrt (==0.21.2)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.34.158"
+version = "1.34.161"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = "<4.0,>=3.8"
 files = [
-    {file = "botocore_stubs-1.34.158-py3-none-any.whl", hash = "sha256:32fb2f944917d4765146a45ff4d13fa5407e9ce9d51f46d41a3ec1b421922afb"},
-    {file = "botocore_stubs-1.34.158.tar.gz", hash = "sha256:5de0c9e6e67870b1320664dc50bf53dbf6de52292cb96d8f081358914f0a010e"},
+    {file = "botocore_stubs-1.34.161-py3-none-any.whl", hash = "sha256:fff186b749b60814e01abbeca447d7c2d38d363c726bc23ee2f52da2dbcda868"},
+    {file = "botocore_stubs-1.34.161.tar.gz", hash = "sha256:59d9493c9724dff1a76004dc3ec1eca9290ccb46ddc057acf3ac44071d02d3cb"},
 ]
 
 [package.dependencies]
@@ -708,13 +708,13 @@ files = [
 
 [[package]]
 name = "cfn-lint"
-version = "1.9.7"
+version = "1.10.1"
 description = "Checks CloudFormation templates for practices and behaviour that could potentially be improved"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "cfn_lint-1.9.7-py3-none-any.whl", hash = "sha256:80c67aa3eee1ab0dbfd9d1bc6b5a73aaf950bb2424263d6140c04a650f93cb54"},
-    {file = "cfn_lint-1.9.7.tar.gz", hash = "sha256:c9a460ad39b9a4aab1d54827ff8a88d878a585a522b73845d05be79fd2b0a988"},
+    {file = "cfn_lint-1.10.1-py3-none-any.whl", hash = "sha256:afa15b4f071fe1271251b74b455df55d8ea6ce8f243966dbae9c314bddbb6ca8"},
+    {file = "cfn_lint-1.10.1.tar.gz", hash = "sha256:9507d3c3edc61bc956df03375474e6110e7f2c42284a0686bad854a5b052fa03"},
 ]
 
 [package.dependencies]
@@ -1874,13 +1874,13 @@ typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
 
 [[package]]
 name = "mypy-boto3-ec2"
-version = "1.34.157"
-description = "Type annotations for boto3.EC2 1.34.157 service generated with mypy-boto3-builder 7.25.0"
+version = "1.34.159"
+description = "Type annotations for boto3.EC2 1.34.159 service generated with mypy-boto3-builder 7.25.3"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mypy_boto3_ec2-1.34.157-py3-none-any.whl", hash = "sha256:9f600372330d2b90069821b6301dd6d7bbad57db3b41ec3408e8f468191824b9"},
-    {file = "mypy_boto3_ec2-1.34.157.tar.gz", hash = "sha256:7350b51330270fbd6cf673c053c95786ce194dddc00173082f7dbbca0e6095b5"},
+    {file = "mypy_boto3_ec2-1.34.159-py3-none-any.whl", hash = "sha256:d155c4295cd38750bf50adf9540951187f8f05800cd6e6b8fd2058ff0eeccfb4"},
+    {file = "mypy_boto3_ec2-1.34.159.tar.gz", hash = "sha256:b9badb833dd01e2076c445b3b8609ec4842221620dc8f701dc146b8ceff05283"},
 ]
 
 [package.dependencies]
@@ -1916,13 +1916,13 @@ typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
 
 [[package]]
 name = "mypy-boto3-s3"
-version = "1.34.158"
-description = "Type annotations for boto3.S3 1.34.158 service generated with mypy-boto3-builder 7.25.3"
+version = "1.34.160"
+description = "Type annotations for boto3.S3 1.34.160 service generated with mypy-boto3-builder 7.26.0"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mypy_boto3_s3-1.34.158-py3-none-any.whl", hash = "sha256:c01f1b2304ba7718c8561aaa2b6dc70fe438c91964256aa6ddc508d1cc553c66"},
-    {file = "mypy_boto3_s3-1.34.158.tar.gz", hash = "sha256:a875eb0ee91ba5ac6967291887f6e924eb9dc157966e8181da20533086218166"},
+    {file = "mypy_boto3_s3-1.34.160-py3-none-any.whl", hash = "sha256:ef6513c39cb97462b1f335dc112b48f612f3d9cfa474b5ce1be8941f28116082"},
+    {file = "mypy_boto3_s3-1.34.160.tar.gz", hash = "sha256:19a6c09a634af79feb2f4aeb55b1bdefc41f7e8905572a035c9b5722cbc3f9f2"},
 ]
 
 [package.dependencies]
@@ -2840,18 +2840,18 @@ crt = ["botocore[crt] (>=1.33.2,<2.0a.0)"]
 
 [[package]]
 name = "setuptools"
-version = "72.1.0"
+version = "72.2.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-72.1.0-py3-none-any.whl", hash = "sha256:5a03e1860cf56bb6ef48ce186b0e557fdba433237481a9a625176c2831be15d1"},
-    {file = "setuptools-72.1.0.tar.gz", hash = "sha256:8d243eff56d095e5817f796ede6ae32941278f542e0f941867cc05ae52b162ec"},
+    {file = "setuptools-72.2.0-py3-none-any.whl", hash = "sha256:f11dd94b7bae3a156a95ec151f24e4637fb4fa19c878e4d191bfb8b2d82728c4"},
+    {file = "setuptools-72.2.0.tar.gz", hash = "sha256:80aacbf633704e9c8bfa1d99fa5dd4dc59573efcf9e4042c13d3bcef91ac2ef9"},
 ]
 
 [package.extras]
 core = ["importlib-metadata (>=6)", "importlib-resources (>=5.10.2)", "jaraco.text (>=3.7)", "more-itertools (>=8.8)", "ordered-set (>=3.1.1)", "packaging (>=24)", "platformdirs (>=2.6.2)", "tomli (>=2.0.1)", "wheel (>=0.43.0)"]
-doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
+doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "pyproject-hooks (!=1.1)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
 test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.14)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "jaraco.test", "mypy (==1.11.*)", "packaging (>=23.2)", "pip (>=19.1)", "pyproject-hooks (!=1.1)", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy", "pytest-perf", "pytest-ruff (<0.4)", "pytest-ruff (>=0.2.1)", "pytest-ruff (>=0.3.2)", "pytest-subprocess", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
@@ -3008,13 +3008,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "sympy"
-version = "1.13.1"
+version = "1.13.2"
 description = "Computer algebra system (CAS) in Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "sympy-1.13.1-py3-none-any.whl", hash = "sha256:db36cdc64bf61b9b24578b6f7bab1ecdd2452cf008f34faa33776680c26d66f8"},
-    {file = "sympy-1.13.1.tar.gz", hash = "sha256:9cebf7e04ff162015ce31c9c6c9144daa34a93bd082f54fd8f12deca4f47515f"},
+    {file = "sympy-1.13.2-py3-none-any.whl", hash = "sha256:c51d75517712f1aed280d4ce58506a4a88d635d6b5dd48b39102a7ae1f3fcfe9"},
+    {file = "sympy-1.13.2.tar.gz", hash = "sha256:401449d84d07be9d0c7a46a64bd54fe097667d5e7181bfe67ec777be9e01cb13"},
 ]
 
 [package.dependencies]
@@ -3128,13 +3128,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "uvicorn"
-version = "0.30.5"
+version = "0.30.6"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "uvicorn-0.30.5-py3-none-any.whl", hash = "sha256:b2d86de274726e9878188fa07576c9ceeff90a839e2b6e25c917fe05f5a6c835"},
-    {file = "uvicorn-0.30.5.tar.gz", hash = "sha256:ac6fdbd4425c5fd17a9fe39daf4d4d075da6fdc80f653e5894cdc2fd98752bee"},
+    {file = "uvicorn-0.30.6-py3-none-any.whl", hash = "sha256:65fd46fe3fda5bdc1b03b94eb634923ff18cd35b2f084813ea79d1f103f711b5"},
+    {file = "uvicorn-0.30.6.tar.gz", hash = "sha256:4b15decdda1e72be08209e860a1e10e92439ad5b97cf44cc945fcbee66fc5788"},
 ]
 
 [package.dependencies]
