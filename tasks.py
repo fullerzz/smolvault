@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from invoke.context import Context
 from invoke.tasks import task
@@ -22,3 +24,9 @@ def show_table(c: Context) -> None:
     cursor.execute("SELECT * FROM filemetadatarecord")
     print(cursor.fetchall())
     conn.close()
+
+
+@task
+def bak_db(c: Context) -> None:
+    timestamp = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d_%H:%M:%S")
+    c.run(f"cp file_metadata.db file_metadata_{timestamp}.bak.db", echo=True)
