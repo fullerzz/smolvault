@@ -33,7 +33,7 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     if expires_delta:
         expire = datetime.now(ZoneInfo("UTC")) + expires_delta
     else:
-        expire = datetime.now(ZoneInfo("UTC")) + timedelta(minutes=15)
+        expire = datetime.now(ZoneInfo("UTC")) + timedelta(hours=24)
     to_encode.update({"exp": expire})
     encoded_jwt: str = jwt.encode(payload=to_encode, key=SECRET_KEY, algorithm=ALGORITHM)  # type: ignore
     return Token(access_token=encoded_jwt, token_type="bearer")  # noqa: S106
