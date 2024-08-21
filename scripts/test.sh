@@ -18,4 +18,4 @@ fi
 # create local cache dir
 mkdir uploads
 
-poetry run pytest -vvv tests/
+uv run pytest -vvv tests/

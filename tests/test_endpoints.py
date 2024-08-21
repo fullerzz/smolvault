@@ -10,9 +10,16 @@ from smolvault.models import FileMetadata
 
 @pytest.mark.asyncio()
 async def test_read_root(client: AsyncClient, access_token: str) -> None:
-    response = await client.get("/", headers={"Authorization": f"Bearer {access_token}"})
+    response = await client.get(
+        "/", headers={"Authorization": f"Bearer {access_token}"}
+    )
     assert response.status_code == 200
-    assert response.json() == {"email": "test@email.com", "full_name": "John Smith", "username": "testuser", "id": 1}
+    assert response.json() == {
+        "email": "test@email.com",
+        "full_name": "John Smith",
+        "username": "testuser",
+        "id": 1,
+    }
 
 
 @pytest.mark.asyncio()
@@ -28,7 +35,9 @@ async def test_list_files(
         return [file_metadata_record]
 
     monkeypatch.setattr(DatabaseClient, "get_all_metadata", mock_get_all_files)
-    response = await client.get("/files", headers={"Authorization": f"Bearer {access_token}"})
+    response = await client.get(
+        "/files", headers={"Authorization": f"Bearer {access_token}"}
+    )
     assert response.status_code == 200
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
 
@@ -50,7 +59,9 @@ async def test_get_file(
         headers={"Authorization": f"Bearer {access_token}"},
     )
     response = await client.get(
-        "/file/original", params={"filename": filename}, headers={"Authorization": f"Bearer {access_token}"}
+        "/file/original",
+        params={"filename": filename},
+        headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 200
     assert response.content == camera_img
