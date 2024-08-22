@@ -39,6 +39,7 @@ jobs:
     - name: Install dependencies
       if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
       run: |
+        pip install uv==0.3.1
         uv venv
         source .venv/bin/activate
         uv sync
