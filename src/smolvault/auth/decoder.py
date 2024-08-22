@@ -49,7 +49,8 @@ def authenticate_user(db_client: DatabaseClient, username: str, password: str) -
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)], db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
 ) -> User:
     credentials_exception = HTTPException(
         status_code=401,
