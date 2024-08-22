@@ -18,6 +18,11 @@ def fmt(c: Context) -> None:
 
 
 @task
+def pip_compile(c: Context) -> None:
+    c.run("uv pip compile pyproject.toml -o requirements.txt", echo=True, pty=True)
+
+
+@task
 def show_table(c: Context) -> None:
     conn = sqlite3.connect("file_metadata.db")
     cursor = conn.cursor()
