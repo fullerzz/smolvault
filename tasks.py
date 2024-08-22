@@ -9,12 +9,12 @@ from rich import print
 
 @task
 def lint(c: Context) -> None:
-    c.run("poetry run ruff check src/smolvault tests", echo=True, pty=True)
+    c.run("ruff check src/smolvault tests --config=pyproject.toml", echo=True, pty=True)
 
 
 @task
 def fmt(c: Context) -> None:
-    c.run("poetry run ruff format src/smolvault tests", echo=True, pty=True)
+    c.run("ruff format src/smolvault tests --config=pyproject.toml", echo=True, pty=True)
 
 
 @task
