@@ -35,7 +35,6 @@ jobs:
         path: /tmp/.uv-cache
         key: uv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/uv.lock') }}
     - name: Install dependencies
-      if: steps.cached-uv-dependencies.outputs.cache-hit != 'true'
       run: |
         pip install uv==0.3.2
         uv venv
