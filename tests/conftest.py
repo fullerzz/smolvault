@@ -35,7 +35,7 @@ def _user() -> None:
         password="testpassword",  # type: ignore # noqa: S106
         email="test@email.com",
         full_name="John Smith",
-    )  # type: ignore
+    )
     client.add_user(user)
 
 
