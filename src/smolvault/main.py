@@ -6,13 +6,25 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from smolvault.auth.decoder import authenticate_user, create_access_token, get_current_user
+from smolvault.auth.decoder import (
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+)
 from smolvault.auth.models import NewUserDTO, Token, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
@@ -21,7 +33,10 @@ from smolvault.config import Settings, get_settings
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
 
 logging.basicConfig(
-    handlers=[RotatingFileHandler("app.log", maxBytes=100_000, backupCount=10), logging.StreamHandler(sys.stdout)],
+    handlers=[
+        RotatingFileHandler("app.log", maxBytes=100_000, backupCount=10),
+        logging.StreamHandler(sys.stdout),
+    ],
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
@@ -85,9 +100,17 @@ async def upload_file(
         logger.error("Filename not received in request")
         raise ValueError("Filename is required")
     file_upload = FileUploadDTO(
-        name=file.filename, size=len(contents), content=contents, tags=tags, user_id=current_user.id
+        name=file.filename,
+        size=len(contents),
+        content=contents,
+        tags=tags,
+        user_id=current_user.id,
     )
-    logger.info("Uploading file to S3 with name %s uploaded by %s", file_upload.name, current_user.username)
+    logger.info(
+        "Uploading file to S3 with name %s uploaded by %s",
+        file_upload.name,
+        current_user.username,
+    )
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
     return Response(
@@ -107,7 +130,11 @@ async def get_file(
     record = db_client.get_metadata(filename, current_user.id)
     if record is None:
         logger.info("File not found: %s", filename)
-        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+        return Response(
+            content=json.dumps({"error": "File not found"}),
+            status_code=404,
+            media_type="application/json",
+        )
     if record.local_path is None or cache.file_exists(record.file_name) is False:
         logger.info("File %s not found in cache, downloading from S3", filename)
         content = s3_client.download(record.object_key)
@@ -163,13 +190,22 @@ async def update_file_tags(
 ) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
-        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+        return Response(
+            content=json.dumps({"error": "File not found"}),
+            status_code=404,
+            media_type="application/json",
+        )
 
     record.tags = tags.tags_str
     db_client.update_metadata(record)
     file_metadata = FileMetadata.model_validate(record.model_dump())
     return Response(
-        content=json.dumps({"message": "Tags updated successfully", "record": file_metadata.model_dump()}),
+        content=json.dumps(
+            {
+                "message": "Tags updated successfully",
+                "record": file_metadata.model_dump(),
+            }
+        ),
         status_code=200,
         media_type="application/json",
     )
@@ -184,7 +220,11 @@ async def delete_file(
 ) -> Response:
     record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
-        return Response(content=json.dumps({"error": "File not found"}), status_code=404, media_type="application/json")
+        return Response(
+            content=json.dumps({"error": "File not found"}),
+            status_code=404,
+            media_type="application/json",
+        )
     s3_client.delete(record.object_key)
     db_client.delete_metadata(record, current_user.id)
     if record.local_path:

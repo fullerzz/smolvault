@@ -108,7 +108,10 @@ class DatabaseClient:
 
     def add_user(self, user: NewUserDTO) -> None:
         user_info = UserInfo(
-            username=user.username, hashed_password=user.hashed_password, email=user.email, full_name=user.full_name
+            username=user.username,
+            hashed_password=user.hashed_password,
+            email=user.email,
+            full_name=user.full_name,
         )
         with Session(self.engine) as session:
             session.add(user_info)
