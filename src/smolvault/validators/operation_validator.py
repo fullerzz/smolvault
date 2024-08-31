@@ -32,8 +32,11 @@ class UploadValidator:
 
 
 class UserCreationValidator:
-    def __init__(self, database_client: DatabaseClient) -> None:
-        self.database_client = database_client
+    def __init__(self) -> None:
+        self.settings = get_settings()
+        self.users_limit = self.settings.users_limit
 
-    def user_creation_allowed(self, email: str) -> bool:
-        raise NotImplementedError
+    def user_creation_allowed(self, db_client: DatabaseClient) -> bool:
+        users: int = db_client.get_user_count()
+        logger.info("%d users currently in the system", users)
+        return users < self.users_limit

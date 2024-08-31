@@ -113,6 +113,12 @@ class DatabaseClient:
             statement = select(UserInfo).where(UserInfo.username == username)
             return session.exec(statement).first()
 
+    def get_user_count(self) -> int:
+        with Session(self.engine) as session:
+            statement = select(UserInfo)
+            results = session.exec(statement)
+            return len(results.fetchall())
+
     def add_user(self, user: NewUserDTO) -> None:
         user_info = UserInfo(
             username=user.username,
