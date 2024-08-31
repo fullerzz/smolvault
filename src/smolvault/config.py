@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     smolvault_db: str
     smolvault_cache: str
     auth_secret_key: str
+    user_whitelist: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

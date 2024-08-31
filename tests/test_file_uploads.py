@@ -43,8 +43,7 @@ async def test_upload_file_no_tags(client: AsyncClient, camera_img: bytes, acces
         files={"file": (filename, camera_img, "image/png")},
         headers={"Authorization": f"Bearer {access_token}"},
     )
+    assert response.status_code == 201
     actual: dict[str, Any] = response.json()
     actual.pop("upload_timestamp")
-
-    assert response.status_code == 201
     assert actual == expected

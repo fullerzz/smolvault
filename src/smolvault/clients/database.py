@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import datetime
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
@@ -59,9 +60,15 @@ class DatabaseClient:
                 session.add(FileTag(tag_name=tag, file_id=file_metadata.id))
             session.commit()
 
-    def get_all_metadata(self, user_id: int) -> Sequence[FileMetadataRecord]:
+    def get_all_metadata(
+        self, user_id: int, start_time: datetime | None = None, end_time: datetime | None = None
+    ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
+            if start_time:
+                statement = statement.where(FileMetadataRecord.upload_timestamp >= start_time.isoformat())
+            if end_time:
+                statement = statement.where(FileMetadataRecord.upload_timestamp <= end_time.isoformat())
             results = session.exec(statement)
             return results.fetchall()
 

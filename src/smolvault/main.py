@@ -10,7 +10,10 @@ from fastapi import (
     BackgroundTasks,
     Depends,
     FastAPI,
+    File,
+    Form,
     HTTPException,
+    UploadFile,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -22,12 +25,13 @@ from smolvault.auth.decoder import (
     create_access_token,
     get_current_user,
 )
-from smolvault.auth.models import Token, User
+from smolvault.auth.models import NewUserDTO, Token, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.config import Settings, get_settings
-from smolvault.models import FileMetadata, FileTagsDTO
+from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
+from smolvault.validators.operation_validator import UploadValidator
 
 logging.basicConfig(
     handlers=[
@@ -61,12 +65,12 @@ async def read_root(current_user: Annotated[User, Depends(get_current_user)]) ->
     return current_user
 
 
-# @app.post("/users/new")
-# async def create_user(
-#     user: NewUserDTO, db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
-# ) -> dict[str, str]:
-#     db_client.add_user(user)
-#     return {"username": user.username}
+@app.post("/users/new")
+async def create_user(
+    user: NewUserDTO, db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
+) -> dict[str, str]:
+    db_client.add_user(user)
+    return {"username": user.username}
 
 
 @app.post("/token")
@@ -88,38 +92,46 @@ async def login_for_access_token(
     return access_token
 
 
-# @app.post("/file/upload")
-# async def upload_file(
-#     current_user: Annotated[User, Depends(get_current_user)],
-#     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
-#     file: Annotated[UploadFile, File()],
-#     tags: str | None = Form(default=None),
-# ) -> Response:
-#     logger.info("Received file upload request from %s", current_user.username)
-#     contents = await file.read()
-#     if file.filename is None:
-#         logger.error("Filename not received in request")
-#         raise ValueError("Filename is required")
-#     file_upload = FileUploadDTO(
-#         name=file.filename,
-#         size=len(contents),
-#         content=contents,
-#         tags=tags,
-#         user_id=current_user.id,
-#     )
-#     logger.info(
-#         "Uploading file to S3 with name %s uploaded by %s",
-#         file_upload.name,
-#         current_user.username,
-#     )
-#     object_key = s3_client.upload(data=file_upload)
-#     db_client.add_metadata(file_upload, object_key)
-#     logger.info("File %s uploaded successfully", file_upload.name)
-#     return Response(
-#         content=json.dumps(file_upload.model_dump(exclude={"content", "tags"})),
-#         status_code=201,
-#         media_type="application/json",
-#     )
+@app.post("/file/upload")
+async def upload_file(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    op_validator: Annotated[UploadValidator, Depends(UploadValidator)],
+    file: Annotated[UploadFile, File()],
+    tags: str | None = Form(default=None),
+) -> Response:
+    logger.info("Received file upload request from %s", current_user.username)
+    if not op_validator.upload_allowed(current_user.id, db_client):
+        logger.error("Upload limit exceeded for user %s", current_user.username)
+        return Response(
+            content=json.dumps({"error": "Upload limit exceeded"}),
+            status_code=400,
+            media_type="application/json",
+        )
+    contents = await file.read()
+    if file.filename is None:
+        logger.error("Filename not received in request")
+        raise ValueError("Filename is required")
+    file_upload = FileUploadDTO(
+        name=file.filename,
+        size=len(contents),
+        content=contents,
+        tags=tags,
+        user_id=current_user.id,
+    )
+    logger.info(
+        "Uploading file to S3 with name %s uploaded by %s",
+        file_upload.name,
+        current_user.username,
+    )
+    object_key = s3_client.upload(data=file_upload)
+    db_client.add_metadata(file_upload, object_key)
+    logger.info("File %s uploaded successfully", file_upload.name)
+    return Response(
+        content=json.dumps(file_upload.model_dump(exclude={"content", "tags"})),
+        status_code=201,
+        media_type="application/json",
+    )
 
 
 @app.get("/file/original")
