@@ -77,14 +77,17 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
 ) -> Token:
+    logger.info("Authenticating user %s", form_data.username)
     user = authenticate_user(db_client, form_data.username, form_data.password)
     if not user:
+        logger.info("Incorrect username or password for %s", form_data.username)
         raise HTTPException(
             status_code=400,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.username})
+    logger.info("User %s authenticated successfully", user.username)
     return access_token
 
 
@@ -95,6 +98,7 @@ async def upload_file(
     file: Annotated[UploadFile, File()],
     tags: str | None = Form(default=None),
 ) -> Response:
+    logger.info("Received file upload request from %s", current_user.username)
     contents = await file.read()
     if file.filename is None:
         logger.error("Filename not received in request")
@@ -113,6 +117,7 @@ async def upload_file(
     )
     object_key = s3_client.upload(data=file_upload)
     db_client.add_metadata(file_upload, object_key)
+    logger.info("File %s uploaded successfully", file_upload.name)
     return Response(
         content=json.dumps(file_upload.model_dump(exclude={"content", "tags"})),
         status_code=201,
@@ -127,6 +132,7 @@ async def get_file(
     filename: str,
     background_tasks: BackgroundTasks,
 ) -> Response:
+    logger.info("Received file download request for %s from %s", filename, current_user.username)
     record = db_client.get_metadata(filename, current_user.id)
     if record is None:
         logger.info("File not found: %s", filename)
@@ -152,9 +158,12 @@ async def get_file_metadata(
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     name: str,
 ) -> FileMetadata | None:
+    logger.info("Retrieving metadata for file %s requested by %s", name, current_user.username)
     record: FileMetadataRecord | None = db_client.get_metadata(urllib.parse.unquote(name), current_user.id)
     if record:
+        logger.info("Retrieved metadata for file %s", name)
         return FileMetadata.model_validate(record.model_dump())
+    logger.info("File metadata for %s not found", name)
     return None
 
 
@@ -163,6 +172,7 @@ async def get_files(
     current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
 ) -> list[FileMetadata]:
+    logger.info("Retrieving all files for user %s", current_user.username)
     raw_metadata = db_client.get_all_metadata(current_user.id)
     logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
@@ -175,6 +185,7 @@ async def search_files(
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     tag: str,
 ) -> list[FileMetadata]:
+    logger.info("Retrieving files with tag %s for user %s", tag, current_user.username)
     raw_metadata = db_client.select_metadata_by_tag(tag, current_user.id)
     logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
@@ -188,8 +199,10 @@ async def update_file_tags(
     name: str,
     tags: FileTagsDTO,
 ) -> Response:
+    logger.info("Updating tags for file %s requested by %s", name, current_user.username)
     record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
+        logger.info("Tag update failed. File %s not found", name)
         return Response(
             content=json.dumps({"error": "File not found"}),
             status_code=404,
@@ -199,6 +212,7 @@ async def update_file_tags(
     record.tags = tags.tags_str
     db_client.update_metadata(record)
     file_metadata = FileMetadata.model_validate(record.model_dump())
+    logger.info("Tags updated for file %s", name)
     return Response(
         content=json.dumps(
             {
@@ -218,8 +232,10 @@ async def delete_file(
     name: str,
     background_tasks: BackgroundTasks,
 ) -> Response:
+    logger.info("Recieved delete request for file %s from %s", name, current_user.username)
     record: FileMetadataRecord | None = db_client.get_metadata(name, current_user.id)
     if record is None:
+        logger.info("File %s not found", name)
         return Response(
             content=json.dumps({"error": "File not found"}),
             status_code=404,
@@ -229,6 +245,7 @@ async def delete_file(
     db_client.delete_metadata(record, current_user.id)
     if record.local_path:
         background_tasks.add_task(cache.delete_file, record.local_path)
+    logger.info("File %s deleted successfully", name)
     return Response(
         content=json.dumps({"message": "File deleted successfully", "record": record.model_dump()}),
         status_code=200,
