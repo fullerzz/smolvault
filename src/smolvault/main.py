@@ -6,25 +6,13 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
-from fastapi import (
-    BackgroundTasks,
-    Depends,
-    FastAPI,
-    File,
-    Form,
-    HTTPException,
-    UploadFile,
-)
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from smolvault.auth.decoder import (
-    authenticate_user,
-    create_access_token,
-    get_current_user,
-)
+from smolvault.auth.decoder import authenticate_user, create_access_token, get_current_user
 from smolvault.auth.models import NewUserDTO, Token, User
 from smolvault.cache.cache_manager import CacheManager
 from smolvault.clients.aws import S3Client

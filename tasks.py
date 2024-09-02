@@ -1,10 +1,12 @@
 import sqlite3
 from datetime import datetime
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from invoke.context import Context
 from invoke.tasks import task
 from rich import print
+from rich.table import Table
 
 
 @task
@@ -34,6 +36,28 @@ def show_table(c: Context) -> None:
     cursor.execute("SELECT * FROM filemetadatarecord")
     print(cursor.fetchall())
     conn.close()
+
+
+def output_table(title: str, column_names: list[str], rows: list[Any]) -> None:
+    table = Table(title=title)
+    for column_name in column_names:
+        table.add_column(column_name)
+    for row in rows:
+        table.add_row(*row)
+    print(table)
+
+
+@task
+def show_users_table(c: Context) -> None:
+    conn = sqlite3.connect("file_metadata.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM userinfo")
+    results = cursor.fetchall()
+    conn.close()
+    rows: list[tuple[str, str, str, str]] = []
+    for result in results:
+        rows.append((str(result[0]), result[1], result[2], result[4]))  # noqa: PERF401
+    output_table("Users Table", ["id", "username", "hashed_pwd", "name"], rows)
 
 
 @task
