@@ -55,9 +55,13 @@ def show_users_table(c: Context) -> None:
     results = cursor.fetchall()
     conn.close()
     rows: list[tuple[str, str, str, str]] = []
+    column_names = ["id", "username", "hashed_password", "email", "full_name"]
+    print(
+        f"[bold cyan]Unformatted results:[/bold cyan]\n[blue]column_names=[/blue][bold purple]{column_names}[/bold purple]\n {results}"
+    )
     for result in results:
         rows.append((str(result[0]), result[1], result[2], result[4]))  # noqa: PERF401
-    output_table("Users Table", ["id", "username", "hashed_pwd", "name"], rows)
+    output_table("[bold cyan]Users Table[/bold cyan]", ["id", "username", "hashed_pwd", "name"], rows)
 
 
 @task
