@@ -23,7 +23,12 @@ class UploadValidator:
         start_time = datetime.now() - timedelta(days=1)
         metadata = db_client.get_all_metadata(user_id, start_time=start_time)
         bytes_uploaded = sum([record.size for record in metadata])
-        logger.info("User %s has uploaded %d bytes in the last 24 hours", user_id, bytes_uploaded)
+        logger.info(
+            "User %s has uploaded %d bytes in the last 24 hours. DAILY_LIMIT: %d",
+            user_id,
+            bytes_uploaded,
+            self.daily_upload_limit_bytes,
+        )
         return bytes_uploaded < self.daily_upload_limit_bytes
 
     def _user_on_whitelist(self, user_id: int) -> bool:
