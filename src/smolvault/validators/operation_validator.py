@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from smolvault.clients.database import DatabaseClient
 from smolvault.config import get_settings
 
-DAILY_UPLOAD_LIMIT_BYTES = 1_000_000_000
 logger = logging.getLogger(__name__)
 
 
 class UploadValidator:
     def __init__(self) -> None:
         self.settings = get_settings()
+        self.daily_upload_limit_bytes = self.settings.daily_upload_limit_bytes
         self.whitelist = self.settings.user_whitelist.split(",")
 
     def upload_allowed(self, user_id: int, db_client: DatabaseClient) -> bool:
@@ -24,7 +24,7 @@ class UploadValidator:
         metadata = db_client.get_all_metadata(user_id, start_time=start_time)
         bytes_uploaded = sum([record.size for record in metadata])
         logger.info("User %s has uploaded %d bytes in the last 24 hours", user_id, bytes_uploaded)
-        return bytes_uploaded < DAILY_UPLOAD_LIMIT_BYTES
+        return bytes_uploaded < self.daily_upload_limit_bytes
 
     def _user_on_whitelist(self, user_id: int) -> bool:
         logger.info("Checking whitelist for user %s", user_id)
