@@ -1540,7 +1540,7 @@ wheels = [
 
 [[package]]
 name = "smolvault"
-version = "0.5.1"
+version = "0.6.0"
 source = { editable = "." }
 dependencies = [
     { name = "bcrypt" },
@@ -1557,11 +1557,9 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "anyio" },
-    { name = "boto3-stubs" },
     { name = "boto3-stubs", extra = ["essential"] },
     { name = "httpx" },
     { name = "invoke" },
-    { name = "moto" },
     { name = "moto", extra = ["all"] },
     { name = "mypy" },
     { name = "polyfactory" },

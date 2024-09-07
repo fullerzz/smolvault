@@ -68,3 +68,8 @@ def show_users_table(c: Context) -> None:
 def bak_db(c: Context) -> None:
     timestamp = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d_%H:%M:%S")
     c.run(f"cp file_metadata.db file_metadata_{timestamp}.bak.db", echo=True)
+
+
+@task
+def export_reqs(c: Context) -> None:
+    c.run("uv export --no-emit-project --no-dev --output-file=requirements.txt", echo=True, pty=True)
