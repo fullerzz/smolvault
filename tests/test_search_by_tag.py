@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from smolvault.models import FileMetadata
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_bucket_w_camera_img")
 async def test_search_tag_exists(
     client: AsyncClient,
@@ -37,7 +37,7 @@ async def test_search_tag_exists(
     assert actual == expected
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_search_tag_not_found(client: AsyncClient, access_token: str) -> None:
     response = await client.get(

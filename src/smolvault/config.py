@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     smolvault_db: str
     smolvault_cache: str
     auth_secret_key: str
+    user_whitelist: str
+    users_limit: int
+    daily_upload_limit_bytes: int
 
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -1,10 +1,12 @@
 import sqlite3
 from datetime import datetime
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from invoke.context import Context
 from invoke.tasks import task
 from rich import print
+from rich.table import Table
 
 
 @task
@@ -36,7 +38,38 @@ def show_table(c: Context) -> None:
     conn.close()
 
 
+def output_table(title: str, column_names: list[str], rows: list[Any]) -> None:
+    table = Table(title=title)
+    for column_name in column_names:
+        table.add_column(column_name)
+    for row in rows:
+        table.add_row(*row)
+    print(table)
+
+
+@task
+def show_users_table(c: Context) -> None:
+    conn = sqlite3.connect("file_metadata.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM userinfo")
+    results = cursor.fetchall()
+    conn.close()
+    rows: list[tuple[str, str, str, str]] = []
+    column_names = ["id", "username", "hashed_password", "email", "full_name"]
+    print(
+        f"[bold cyan]Unformatted results:[/bold cyan]\n[blue]column_names=[/blue][bold purple]{column_names}[/bold purple]\n {results}"
+    )
+    for result in results:
+        rows.append((str(result[0]), result[1], result[2], result[4]))  # noqa: PERF401
+    output_table("[bold cyan]Users Table[/bold cyan]", ["id", "username", "hashed_pwd", "name"], rows)
+
+
 @task
 def bak_db(c: Context) -> None:
     timestamp = datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d_%H:%M:%S")
     c.run(f"cp file_metadata.db file_metadata_{timestamp}.bak.db", echo=True)
+
+
+@task
+def export_reqs(c: Context) -> None:
+    c.run("uv export --no-emit-project --no-dev --output-file=requirements.txt", echo=True, pty=True)
