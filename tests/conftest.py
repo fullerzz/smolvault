@@ -2,7 +2,8 @@ import os
 import pathlib
 from collections.abc import Generator
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import boto3
@@ -22,24 +23,38 @@ from smolvault.models import FileMetadata
 
 
 class TestDatabaseClient(DatabaseClient):
-    def __init__(self) -> None:
-        self.engine = create_engine("sqlite:///test.db", echo=False, connect_args={"check_same_thread": False})
+    def __init__(self, filename: str) -> None:
+        self.engine = create_engine(f"sqlite:///{filename}", echo=False, connect_args={"check_same_thread": False})
         SQLModel.metadata.create_all(self.engine)
 
 
-@pytest.fixture(scope="session")
-def _user() -> None:
-    client = TestDatabaseClient()
+@pytest.fixture
+def anyio_backend() -> Literal["asyncio"]:
+    return "asyncio"
+
+
+@pytest.fixture
+def temp_db(monkeypatch: pytest.MonkeyPatch) -> Generator[TestDatabaseClient, Any, Any]:
+    db_filename = f"test-{uuid4().hex}.db"
+    os.environ["SMOLVAULT_DB"] = db_filename
+    monkeypatch.setenv("SMOLVAULT_DB", db_filename)
+    client = TestDatabaseClient(db_filename)
+    yield client
+    pathlib.Path(db_filename).unlink()
+
+
+@pytest.fixture
+def _user(temp_db: TestDatabaseClient) -> None:
     user = NewUserDTO(
         username="testuser",
         password="testpassword",  # type: ignore # noqa: S106
         email="test@email.com",
         full_name="John Smith",
     )
-    client.add_user(user)
+    temp_db.add_user(user)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def client(_user: None) -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore

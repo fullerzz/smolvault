@@ -1542,6 +1542,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "anyio" },
     { name = "boto3-stubs" },
     { name = "boto3-stubs", extra = ["essential"] },
     { name = "httpx" },
@@ -1574,6 +1575,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "anyio", specifier = ">=4.4.0" },
     { name = "boto3-stubs", extras = ["essential"], specifier = ">=1.35.2" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "invoke", specifier = ">=2.2.0" },
@@ -1583,7 +1585,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-asyncio", specifier = ">=0.23.8" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
-    { name = "pytest-sugar" },
+    { name = "pytest-sugar", specifier = ">=1.0.0" },
     { name = "rich", specifier = ">=13.7.1" },
     { name = "ruff", specifier = ">=0.6.1" },
     { name = "types-pyjwt", specifier = ">=1.7.1" },

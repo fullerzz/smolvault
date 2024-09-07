@@ -9,7 +9,7 @@ from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.models import FileMetadata
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_read_root(client: AsyncClient, access_token: str) -> None:
     response = await client.get("/", headers={"Authorization": f"Bearer {access_token}"})
     assert response.status_code == 200
@@ -21,7 +21,7 @@ async def test_read_root(client: AsyncClient, access_token: str) -> None:
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_list_files(
     client: AsyncClient,
@@ -39,7 +39,7 @@ async def test_list_files(
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_bucket_w_camera_img")
 async def test_get_file(
     client: AsyncClient,
@@ -64,7 +64,7 @@ async def test_get_file(
     assert response.content == camera_img
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_get_file_not_found(client: AsyncClient, access_token: str) -> None:
     response = await client.get(

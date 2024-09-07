@@ -19,7 +19,7 @@ from smolvault.clients.aws import S3Client
 from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.config import Settings, get_settings
 from smolvault.models import FileMetadata, FileTagsDTO, FileUploadDTO
-from smolvault.validators.operation_validator import UploadValidator
+from smolvault.validators.operation_validator import UploadValidator, UserCreationValidator
 
 logging.basicConfig(
     handlers=[
@@ -55,10 +55,21 @@ async def read_root(current_user: Annotated[User, Depends(get_current_user)]) ->
 
 @app.post("/users/new")
 async def create_user(
-    user: NewUserDTO, db_client: Annotated[DatabaseClient, Depends(DatabaseClient)]
+    user: NewUserDTO,
+    db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    op_validator: Annotated[UserCreationValidator, Depends(UserCreationValidator)],
 ) -> dict[str, str]:
-    db_client.add_user(user)
-    return {"username": user.username}
+    logger.info("Received new user creation request for %s", user.username)
+    if op_validator.user_creation_allowed(db_client):
+        logger.info("Creating new user", extra=user.model_dump(exclude={"password"}))
+        db_client.add_user(user)
+        return {"username": user.username}
+    else:
+        logger.error("User creation failed. User limit exceeded")
+        raise HTTPException(
+            status_code=400,
+            detail="User limit exceeded",
+        )
 
 
 @app.post("/token")

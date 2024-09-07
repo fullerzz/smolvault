@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from smolvault.models import FileUploadDTO
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_upload_file(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
@@ -31,7 +31,7 @@ async def test_upload_file(client: AsyncClient, camera_img: bytes, access_token:
     assert actual == expected
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_upload_file_no_tags(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"

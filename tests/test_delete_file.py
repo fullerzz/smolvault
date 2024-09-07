@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from smolvault.models import FileUploadDTO
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_delete_file(client: AsyncClient, camera_img: bytes, access_token: str) -> None:
     # first upload the file

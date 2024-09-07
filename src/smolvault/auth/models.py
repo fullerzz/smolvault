@@ -17,7 +17,7 @@ class NewUserDTO(BaseModel):
     full_name: str
     password: SecretStr
 
-    @computed_field  # type: ignore
+    @computed_field  # type: ignore[misc]
     @cached_property
     def hashed_password(self) -> str:
         return bcrypt.hashpw(self.password.get_secret_value().encode(), bcrypt.gensalt()).decode()
