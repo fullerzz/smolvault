@@ -1,7 +1,10 @@
+from os import environ
 from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
+
+from tests.conftest import TestDatabaseClient
 
 
 @pytest.fixture(scope="module")
@@ -76,7 +79,7 @@ async def user_jack(client: AsyncClient) -> str:
     return response.json()["access_token"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_get_file(client: AsyncClient, camera_img: bytes, user_john: str, user_jane: str) -> None:
     """
@@ -115,7 +118,7 @@ async def _fully_populated_user_bucket(
     img_size = len(camera_img)
     bytes_uploaded = 0
     filenames: list[str] = []
-    while bytes_uploaded < 50000:
+    while bytes_uploaded < int(environ["DAILY_UPLOAD_LIMIT_BYTES"]):
         # upload file as john
         filename = f"{uuid4().hex[:6]}-camera.png"
         filenames.append(filename)
@@ -128,7 +131,7 @@ async def _fully_populated_user_bucket(
         bytes_uploaded += img_size
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_fully_populated_user_bucket")
 async def test_user_over_daily_upload_limit(client: AsyncClient, camera_img: bytes, user_jack: str) -> None:
     """
@@ -144,3 +147,29 @@ async def test_user_over_daily_upload_limit(client: AsyncClient, camera_img: byt
     )
     assert response.status_code == 400
     assert response.json() == {"error": "Upload limit exceeded"}
+
+
+@pytest.mark.anyio
+@pytest.mark.usefixtures("_test_bucket")
+@pytest.mark.xfail(reason="Not implemented fully")
+async def test_user_creation_limit(
+    client: AsyncClient, user_john: str, user_jane: str, user_jack: str, db_client: TestDatabaseClient
+) -> None:
+    """
+    Test that the system blocks new user creation if the user limit has been reached.
+    """
+
+    users_count = db_client.get_user_count()  # noqa: F841
+    max_users = int(environ["USERS_LIMIT"])  # noqa: F841
+
+    user_data = {
+        "username": "kate",
+        "password": "testpassword",
+        "email": "email4@email.com",
+        "full_name": "Kate Smith",
+    }
+    response = await client.post(
+        "/users/new",
+        json=user_data,
+    )
+    assert response.status_code == 400

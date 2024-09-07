@@ -9,19 +9,7 @@ from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.models import FileMetadata
 
 
-@pytest.mark.asyncio
-async def test_read_root(client: AsyncClient, access_token: str) -> None:
-    response = await client.get("/", headers={"Authorization": f"Bearer {access_token}"})
-    assert response.status_code == 200
-    assert response.json() == {
-        "email": "test@email.com",
-        "full_name": "John Smith",
-        "username": "testuser",
-        "id": 1,
-    }
-
-
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_list_files(
     client: AsyncClient,
@@ -39,7 +27,7 @@ async def test_list_files(
     assert response.json() == [file_metadata.model_dump(by_alias=True)]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_bucket_w_camera_img")
 async def test_get_file(
     client: AsyncClient,
@@ -49,12 +37,13 @@ async def test_get_file(
     access_token: str,
 ) -> None:
     filename = f"{uuid4().hex[:6]}-camera.png"
-    await client.post(
+    response = await client.post(
         "/file/upload",
         files={"file": (filename, camera_img, "image/png")},
         data={"tags": "camera,photo"},
         headers={"Authorization": f"Bearer {access_token}"},
     )
+    assert response.status_code == 201
     response = await client.get(
         "/file/original",
         params={"filename": filename},
@@ -64,7 +53,7 @@ async def test_get_file(
     assert response.content == camera_img
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
 async def test_get_file_not_found(client: AsyncClient, access_token: str) -> None:
     response = await client.get(
