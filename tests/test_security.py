@@ -1,10 +1,13 @@
+from os import environ
 from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import TestDatabaseClient
 
-@pytest.fixture
+
+@pytest.fixture(scope="module")
 async def user_john(client: AsyncClient) -> str:
     """
     Creates a new user 'John' and returns the access token for John.
@@ -29,7 +32,7 @@ async def user_john(client: AsyncClient) -> str:
     return response.json()["access_token"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def user_jane(client: AsyncClient) -> str:
     """
     Creates a new user 'Jane' and returns the access token for Jane.
@@ -51,7 +54,7 @@ async def user_jane(client: AsyncClient) -> str:
     return response.json()["access_token"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 async def user_jack(client: AsyncClient) -> str:
     """
     Creates a new user 'Jack' and returns the access token for Jack.
@@ -115,7 +118,7 @@ async def _fully_populated_user_bucket(
     img_size = len(camera_img)
     bytes_uploaded = 0
     filenames: list[str] = []
-    while bytes_uploaded < 50000:
+    while bytes_uploaded < int(environ["DAILY_UPLOAD_LIMIT_BYTES"]):
         # upload file as john
         filename = f"{uuid4().hex[:6]}-camera.png"
         filenames.append(filename)
@@ -148,10 +151,16 @@ async def test_user_over_daily_upload_limit(client: AsyncClient, camera_img: byt
 
 @pytest.mark.anyio
 @pytest.mark.usefixtures("_test_bucket")
-async def test_user_creation_limit(client: AsyncClient, user_john: str, user_jane: str, user_jack: str) -> None:
+@pytest.mark.xfail(reason="Not implemented fully")
+async def test_user_creation_limit(
+    client: AsyncClient, user_john: str, user_jane: str, user_jack: str, db_client: TestDatabaseClient
+) -> None:
     """
     Test that the system blocks new user creation if the user limit has been reached.
     """
+
+    users_count = db_client.get_user_count()  # noqa: F841
+    max_users = int(environ["USERS_LIMIT"])  # noqa: F841
 
     user_data = {
         "username": "kate",

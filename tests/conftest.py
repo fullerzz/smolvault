@@ -3,7 +3,6 @@ import pathlib
 from collections.abc import Generator
 from datetime import datetime
 from typing import Any, Literal
-from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import boto3
@@ -11,9 +10,9 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from moto import mock_aws
 from mypy_boto3_s3 import S3Client
+from polyfactory.pytest_plugin import register_fixture
 from sqlmodel import SQLModel, create_engine
 
-from smolvault.auth.models import NewUserDTO
 from smolvault.clients.database import (
     DatabaseClient,
     FileMetadataRecord,
@@ -21,50 +20,46 @@ from smolvault.clients.database import (
 from smolvault.main import app
 from smolvault.models import FileMetadata
 
+from .factories import UserFactory
+
+user_factory_fixture = register_fixture(UserFactory, name="user_factory")
+
 
 class TestDatabaseClient(DatabaseClient):
-    def __init__(self, filename: str) -> None:
-        self.engine = create_engine(f"sqlite:///{filename}", echo=False, connect_args={"check_same_thread": False})
+    def __init__(self) -> None:
+        self.engine = create_engine("sqlite:///test.db", echo=False, connect_args={"check_same_thread": False})
         SQLModel.metadata.create_all(self.engine)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def anyio_backend() -> Literal["asyncio"]:
     return "asyncio"
 
 
 @pytest.fixture
-def temp_db(monkeypatch: pytest.MonkeyPatch) -> Generator[TestDatabaseClient, Any, Any]:
-    db_filename = f"test-{uuid4().hex}.db"
-    os.environ["SMOLVAULT_DB"] = db_filename
-    monkeypatch.setenv("SMOLVAULT_DB", db_filename)
-    client = TestDatabaseClient(db_filename)
-    yield client
-    pathlib.Path(db_filename).unlink()
+def db_client() -> TestDatabaseClient:
+    return TestDatabaseClient()
 
 
 @pytest.fixture
-def _user(temp_db: TestDatabaseClient) -> None:
-    user = NewUserDTO(
-        username="testuser",
-        password="testpassword",  # type: ignore # noqa: S106
-        email="test@email.com",
-        full_name="John Smith",
-    )
-    temp_db.add_user(user)
+def user(user_factory: UserFactory, db_client: TestDatabaseClient) -> tuple[str, str]:
+    user = user_factory.build()
+    db_client.add_user(user)
+    return user.username, user.password.get_secret_value()
 
 
-@pytest.fixture
-def client(_user: None) -> AsyncClient:
+@pytest.fixture(scope="module")
+def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
     return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
 
 
 @pytest.fixture
-async def access_token(client: AsyncClient) -> str:
+async def access_token(client: AsyncClient, user: tuple[str, str]) -> str:
+    username, password = user
     response = await client.post(
         "/token",
-        data={"username": "testuser", "password": "testpassword"},
+        data={"username": username, "password": password},
     )
     return response.json()["access_token"]
 
