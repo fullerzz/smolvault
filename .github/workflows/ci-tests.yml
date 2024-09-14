@@ -37,7 +37,7 @@ jobs:
         key: uv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/uv.lock') }}
     - name: Install dependencies
       run: |
-        pip install uv==0.3.2
+        pip install uv==0.4.10
         uv venv
         source .venv/bin/activate
         uv sync
