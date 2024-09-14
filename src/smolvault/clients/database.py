@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime
 
+from fastapi import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from smolvault.auth.models import NewUserDTO
@@ -61,10 +62,17 @@ class DatabaseClient:
             session.commit()
 
     def get_all_metadata(
-        self, user_id: int, start_time: datetime | None = None, end_time: datetime | None = None
+        self,
+        user_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        offset: int = 0,
+        limit: int = Query(default=100, le=100),
     ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
-            statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
+            statement = (
+                select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id).offset(offset).limit(limit)
+            )
             if start_time:
                 statement = statement.where(FileMetadataRecord.upload_timestamp >= start_time.isoformat())
             if end_time:
