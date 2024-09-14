@@ -13,10 +13,7 @@ from mypy_boto3_s3 import S3Client
 from polyfactory.pytest_plugin import register_fixture
 from sqlmodel import SQLModel, create_engine
 
-from smolvault.clients.database import (
-    DatabaseClient,
-    FileMetadataRecord,
-)
+from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.main import app
 from smolvault.models import FileMetadata
 
