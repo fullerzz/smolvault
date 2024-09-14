@@ -64,6 +64,7 @@ class DatabaseClient:
     def get_all_metadata(
         self,
         user_id: int,
+        *,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
         offset: int = 0,
