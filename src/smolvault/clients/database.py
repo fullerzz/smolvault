@@ -42,7 +42,7 @@ class FileTag(SQLModel, table=True):
 class DatabaseClient:
     def __init__(self) -> None:
         self.settings = get_settings()
-        self.engine = create_engine(f"sqlite:///{self.settings.smolvault_db}", echo=False)
+        self.engine = create_engine(f"sqlite:///{self.settings.smolvault_db}", echo=True)
         SQLModel.metadata.create_all(self.engine)
 
     def add_metadata(self, file_upload: FileUploadDTO, key: str) -> None:
