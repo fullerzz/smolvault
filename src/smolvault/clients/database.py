@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import Query
+from pydantic import Field as PydanticField
+from pydantic import validate_call
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from smolvault.auth.models import NewUserDTO
@@ -61,6 +63,7 @@ class DatabaseClient:
                 session.add(FileTag(tag_name=tag, file_id=file_metadata.id))
             session.commit()
 
+    @validate_call
     def get_all_metadata(
         self,
         user_id: int,
@@ -68,18 +71,16 @@ class DatabaseClient:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
         offset: int = 0,
-        limit: int = Query(default=100, le=100),
+        limit: Annotated[int, PydanticField(default=10, lt=100)],
     ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
-            statement = (
-                select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id).offset(offset).limit(limit)
-            )
+            statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
             if start_time:
                 statement = statement.where(FileMetadataRecord.upload_timestamp >= start_time.isoformat())
             if end_time:
                 statement = statement.where(FileMetadataRecord.upload_timestamp <= end_time.isoformat())
-            results = session.exec(statement)
-            return results.fetchall()
+            results = session.exec(statement.offset(offset).limit(limit)).all()
+            return results
 
     def get_metadata(self, filename: str, user_id: int) -> FileMetadataRecord | None:
         with Session(self.engine) as session:
