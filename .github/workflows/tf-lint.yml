@@ -1,4 +1,4 @@
-name: Lint
+name: IAC Checks - tflint
 on:
   push:
     branches: [ master, dev ]
@@ -38,8 +38,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
 
     - id: tflint
-      run: |
-        tflint -f compact --recursive --chdir=terraform --color
+      run: tflint -f compact --recursive --chdir=terraform
 
     - run: echo ${{ steps.tflint.outputs.stdout }}
     - run: echo ${{ steps.tflint.outputs.stderr }}
