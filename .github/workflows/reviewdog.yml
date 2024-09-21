@@ -1,0 +1,47 @@
+name: reviewdog
+on: [pull_request]
+jobs:
+  mypy:
+    name: runner / mypy
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12"]
+    env:
+      # Configure a constant location for the uv cache
+        UV_CACHE_DIR: /tmp/.uv-cache
+        FORCE_COLOR: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Load cached venv
+        id: cached-uv-dependencies
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.uv-cache
+          key: uv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/uv.lock') }}
+      - name: Install dependencies
+        run: |
+          pip install uv==0.4.15
+          uv venv
+          source .venv/bin/activate
+          uv sync
+      - uses: tsuyoshicho/action-mypy@v4
+        with:
+          github_token: ${{ secrets.github_token }}
+          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
+          reporter: github-pr-review
+          # Change reporter level if you need.
+          # GitHub Status Check won't become failure with warning.
+          level: warning
+          setup_command: |
+            source .venv/bin/activate
+          setup_method: adaptive
+          # Change the current directory to run mypy command.
+          # mypy command reads setup.cfg or other settings file in this path.
+          workdir: .
+          target: src
