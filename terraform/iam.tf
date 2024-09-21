@@ -8,12 +8,12 @@ resource "aws_iam_access_key" "smolvault-user" {
 
 data "aws_iam_policy_document" "smolvault-policy" {
   statement {
-    effect    = "AllowS3"
+    effect    = "Allow"
     actions   = ["s3:*"]
     resources = [aws_s3_bucket.smolvault.arn]
   }
   statement {
-    effect    = "AllowKMS"
+    effect    = "Allow"
     actions   = ["kms:*"]
     resources = ["*"]
   }

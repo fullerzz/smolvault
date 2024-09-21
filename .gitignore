@@ -177,3 +177,6 @@ uploads/*
 # env files
 *.env
 !tests/testing.env
+
+# terraform
+**/.terraform/*
