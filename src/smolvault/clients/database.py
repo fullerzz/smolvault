@@ -71,7 +71,7 @@ class DatabaseClient:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
         offset: int = 0,
-        limit: Annotated[int, PydanticField(default=10, lt=100)],
+        limit: Annotated[int, PydanticField(default=10, lt=100)] = 10,
     ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
