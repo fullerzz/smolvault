@@ -91,6 +91,7 @@ class DatabaseClient:
             )
             return session.exec(statement).first()
 
+    # TODO: Add offset and limit parameters
     def select_metadata_by_tag(self, tag: str, user_id: int) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = (

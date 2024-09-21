@@ -175,6 +175,7 @@ async def get_file_metadata(
     return None
 
 
+# TODO: Add offset and limit query parameters
 @app.get("/files")
 async def get_files(
     current_user: Annotated[User, Depends(get_current_user)],
@@ -187,6 +188,7 @@ async def get_files(
     return results
 
 
+# TODO: Add offset and limit query parameters
 @app.get("/files/search")
 async def search_files(
     current_user: Annotated[User, Depends(get_current_user)],
