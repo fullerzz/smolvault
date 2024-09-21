@@ -26,7 +26,6 @@ jobs:
       name: Setup TFLint
       with:
         tflint_version: v0.52.0
-        tflint_wrapper: true
 
     - name: Show version
       run: tflint --version
@@ -37,9 +36,5 @@ jobs:
         # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
         GITHUB_TOKEN: ${{ github.token }}
 
-    - id: tflint
+    - name: Run tflint
       run: tflint -f compact --recursive --chdir=terraform
-
-    - run: echo ${{ steps.tflint.outputs.stdout }}
-    - run: echo ${{ steps.tflint.outputs.stderr }}
-    - run: echo ${{ steps.tflint.outputs.exitcode }}
