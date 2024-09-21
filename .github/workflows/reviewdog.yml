@@ -26,8 +26,6 @@ jobs:
           uv venv
           source .venv/bin/activate
           uv sync
-
-      - uses: actions/checkout@v4
       - uses: tsuyoshicho/action-mypy@v4
         with:
           github_token: ${{ secrets.github_token }}
@@ -36,6 +34,9 @@ jobs:
           # Change reporter level if you need.
           # GitHub Status Check won't become failure with warning.
           level: warning
+          setup_command: |
+            source .venv/bin/activate
+          setup_method: adaptive
           # Change the current directory to run mypy command.
           # mypy command reads setup.cfg or other settings file in this path.
           workdir: .
