@@ -70,8 +70,8 @@ class DatabaseClient:
         *,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
-        offset: int = 0,
-        limit: Annotated[int, PydanticField(default=10, lt=100)] = 10,
+        offset: int | None = 0,
+        limit: Annotated[int | None, PydanticField(default=10, lt=100)] = 10,
     ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
@@ -91,8 +91,13 @@ class DatabaseClient:
             )
             return session.exec(statement).first()
 
-    # TODO: Add offset and limit parameters
-    def select_metadata_by_tag(self, tag: str, user_id: int) -> Sequence[FileMetadataRecord]:
+    def select_metadata_by_tag(
+        self,
+        tag: str,
+        user_id: int,
+        offset: int | None = 0,
+        limit: Annotated[int | None, PydanticField(default=10, lt=100)] = 10,
+    ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = (
                 select(FileMetadataRecord)
@@ -100,7 +105,7 @@ class DatabaseClient:
                 .where(FileTag.tag_name == tag)
                 .where(FileMetadataRecord.user_id == user_id)
             )
-            results = session.exec(statement)
+            results = session.exec(statement.offset(offset).limit(limit))
             return results.fetchall()
 
     def update_metadata(self, record: FileMetadataRecord) -> None:

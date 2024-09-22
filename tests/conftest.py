@@ -48,7 +48,7 @@ def user(user_factory: UserFactory, db_client: TestDatabaseClient) -> tuple[str,
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
-    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
 
 
 @pytest.fixture
