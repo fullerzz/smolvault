@@ -179,9 +179,11 @@ async def get_file_metadata(
 async def get_files(
     current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
+    offset: int | None = None,
+    limit: int | None = None,
 ) -> list[FileMetadata]:
     logger.info("Retrieving all files for user %s", current_user.username)
-    raw_metadata = db_client.get_all_metadata(current_user.id)
+    raw_metadata = db_client.get_all_metadata(user_id=current_user.id, offset=offset, limit=limit)
     logger.info("Retrieved %d records from database", len(raw_metadata))
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results
@@ -192,9 +194,11 @@ async def search_files(
     current_user: Annotated[User, Depends(get_current_user)],
     db_client: Annotated[DatabaseClient, Depends(DatabaseClient)],
     tag: str,
+    offset: int | None = None,
+    limit: int | None = None,
 ) -> list[FileMetadata]:
     logger.info("Retrieving files with tag %s for user %s", tag, current_user.username)
-    raw_metadata = db_client.select_metadata_by_tag(tag, current_user.id)
+    raw_metadata = db_client.select_metadata_by_tag(tag, current_user.id, offset=offset, limit=limit)
     logger.info("Retrieved %d records from database with tag %s", len(raw_metadata), tag)
     results = [FileMetadata.model_validate(metadata.model_dump()) for metadata in raw_metadata]
     return results

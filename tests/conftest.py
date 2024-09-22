@@ -13,10 +13,7 @@ from mypy_boto3_s3 import S3Client
 from polyfactory.pytest_plugin import register_fixture
 from sqlmodel import SQLModel, create_engine
 
-from smolvault.clients.database import (
-    DatabaseClient,
-    FileMetadataRecord,
-)
+from smolvault.clients.database import DatabaseClient, FileMetadataRecord
 from smolvault.main import app
 from smolvault.models import FileMetadata
 
@@ -51,7 +48,7 @@ def user(user_factory: UserFactory, db_client: TestDatabaseClient) -> tuple[str,
 @pytest.fixture(scope="module")
 def client() -> AsyncClient:
     app.dependency_overrides[DatabaseClient] = TestDatabaseClient
-    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")  # type: ignore
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver")
 
 
 @pytest.fixture

@@ -1,6 +1,9 @@
 from collections.abc import Sequence
 from datetime import datetime
+from typing import Annotated
 
+from pydantic import Field as PydanticField
+from pydantic import validate_call
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from smolvault.auth.models import NewUserDTO
@@ -60,8 +63,15 @@ class DatabaseClient:
                 session.add(FileTag(tag_name=tag, file_id=file_metadata.id))
             session.commit()
 
+    @validate_call
     def get_all_metadata(
-        self, user_id: int, start_time: datetime | None = None, end_time: datetime | None = None
+        self,
+        user_id: int,
+        *,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+        offset: int | None = 0,
+        limit: Annotated[int | None, PydanticField(default=10, lt=100)] = 10,
     ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = select(FileMetadataRecord).where(FileMetadataRecord.user_id == user_id)
@@ -69,8 +79,8 @@ class DatabaseClient:
                 statement = statement.where(FileMetadataRecord.upload_timestamp >= start_time.isoformat())
             if end_time:
                 statement = statement.where(FileMetadataRecord.upload_timestamp <= end_time.isoformat())
-            results = session.exec(statement)
-            return results.fetchall()
+            results = session.exec(statement.offset(offset).limit(limit)).all()
+            return results
 
     def get_metadata(self, filename: str, user_id: int) -> FileMetadataRecord | None:
         with Session(self.engine) as session:
@@ -81,7 +91,13 @@ class DatabaseClient:
             )
             return session.exec(statement).first()
 
-    def select_metadata_by_tag(self, tag: str, user_id: int) -> Sequence[FileMetadataRecord]:
+    def select_metadata_by_tag(
+        self,
+        tag: str,
+        user_id: int,
+        offset: int | None = 0,
+        limit: Annotated[int | None, PydanticField(default=10, lt=100)] = 10,
+    ) -> Sequence[FileMetadataRecord]:
         with Session(self.engine) as session:
             statement = (
                 select(FileMetadataRecord)
@@ -89,7 +105,7 @@ class DatabaseClient:
                 .where(FileTag.tag_name == tag)
                 .where(FileMetadataRecord.user_id == user_id)
             )
-            results = session.exec(statement)
+            results = session.exec(statement.offset(offset).limit(limit))
             return results.fetchall()
 
     def update_metadata(self, record: FileMetadataRecord) -> None:

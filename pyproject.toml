@@ -1,6 +1,6 @@
 [project]
 name = "smolvault"
-version = "0.6.0"
+version = "0.7.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -53,7 +53,7 @@ omit = ["**/__init__.py"]
 line-length = 120
 indent-width = 4
 
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "C90", "I", "N", "UP", "ASYNC", "S", "B", "ERA", "PLE", "PLW", "PLC", "PLW", "PERF", "RUF", "SIM", "PT", "T20", "PTH", "LOG", "G"]
