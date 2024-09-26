@@ -31,7 +31,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="smolvault")
+app = FastAPI(title="smolvault", docs_url=None, redoc_url=None)
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
