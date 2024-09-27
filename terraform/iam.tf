@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "smolvault-policy" {
   statement {
     effect    = "Allow"
     actions   = ["s3:*"]
-    resources = [aws_s3_bucket.smolvault.arn]
+    resources = [aws_s3_bucket.smolvault.arn, "${aws_s3_bucket.smolvault.arn}/*"]
   }
   statement {
     effect    = "Allow"
