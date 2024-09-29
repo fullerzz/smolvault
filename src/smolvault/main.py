@@ -6,6 +6,7 @@ import urllib.parse
 from logging.handlers import RotatingFileHandler
 from typing import Annotated
 
+import sentry_sdk
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -31,6 +32,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+settings: Settings = get_settings()
+sentry_sdk.init(
+    dsn=settings.sentry_dsn,
+    traces_sample_rate=1.0,  # Set traces_sample_rate to 1.0 to capture 100%
+    profiles_sample_rate=1.0,
+)
+
 app = FastAPI(title="smolvault", docs_url=None, redoc_url=None)
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -43,7 +51,6 @@ app.add_middleware(
 )
 
 
-settings: Settings = get_settings()
 s3_client = S3Client(bucket_name=settings.smolvault_bucket)
 cache = CacheManager(cache_dir=settings.smolvault_cache)
 
@@ -263,3 +270,9 @@ async def delete_file(
         status_code=200,
         media_type="application/json",
     )
+
+
+@app.get("/sentry-debug")
+async def trigger_error() -> float:
+    division_by_zero = 1 / 0
+    return division_by_zero
