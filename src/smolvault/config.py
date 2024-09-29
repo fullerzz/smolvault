@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     user_whitelist: str
     users_limit: int
     daily_upload_limit_bytes: int
+    sentry_enabled: bool
     sentry_dsn: str
 
     model_config = SettingsConfigDict(env_file=".env")

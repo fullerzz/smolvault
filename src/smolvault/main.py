@@ -33,11 +33,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 settings: Settings = get_settings()
-sentry_sdk.init(
-    dsn=settings.sentry_dsn,
-    traces_sample_rate=1.0,  # Set traces_sample_rate to 1.0 to capture 100%
-    profiles_sample_rate=1.0,
-)
+if settings.sentry_enabled:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        traces_sample_rate=1.0,  # Set traces_sample_rate to 1.0 to capture 100%
+        profiles_sample_rate=1.0,
+    )
 
 app = FastAPI(title="smolvault", docs_url=None, redoc_url=None)
 
