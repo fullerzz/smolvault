@@ -271,9 +271,3 @@ async def delete_file(
         status_code=200,
         media_type="application/json",
     )
-
-
-@app.get("/sentry-debug")
-async def trigger_error() -> float:
-    division_by_zero = 1 / 0
-    return division_by_zero
