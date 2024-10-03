@@ -38,6 +38,7 @@ if settings.sentry_enabled:
         dsn=settings.sentry_dsn,
         traces_sample_rate=1.0,  # Set traces_sample_rate to 1.0 to capture 100%
         profiles_sample_rate=1.0,
+        environment=settings.environment,
     )
 
 app = FastAPI(title="smolvault", docs_url=None, redoc_url=None)
