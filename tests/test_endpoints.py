@@ -1,3 +1,4 @@
+import urllib.parse
 from collections.abc import Sequence
 from typing import Any
 from uuid import uuid4
@@ -51,6 +52,30 @@ async def test_get_file(
     )
     assert response.status_code == 200
     assert response.content == camera_img
+
+
+@pytest.mark.anyio
+@pytest.mark.usefixtures("_test_bucket")
+async def test_get_file_w_space_in_filename(
+    client: AsyncClient,
+    neon_gas_station_img: bytes,
+    access_token: str,
+) -> None:
+    filename = "neon vintage gas station.png"
+    response = await client.post(
+        "/file/upload",
+        files={"file": (filename, neon_gas_station_img, "image/png")},
+        data={"tags": "wallpaper,neon"},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == 201
+    response = await client.get(
+        "/file/original",
+        params={"filename": urllib.parse.quote_plus(filename)},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    assert response.status_code == 200
+    assert response.content == neon_gas_station_img
 
 
 @pytest.mark.anyio

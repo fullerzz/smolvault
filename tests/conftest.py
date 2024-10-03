@@ -101,6 +101,12 @@ def camera_img() -> bytes:
         return f.read()
 
 
+@pytest.fixture(scope="session")
+def neon_gas_station_img() -> bytes:
+    with pathlib.Path("tests/mock_data/neon vintage gas station.png").open("rb") as f:
+        return f.read()
+
+
 @pytest.fixture
 def file_metadata_record() -> FileMetadataRecord:
     return FileMetadataRecord(
