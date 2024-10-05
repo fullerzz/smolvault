@@ -7,6 +7,8 @@ export AUTH_SECRET_KEY="09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b
 export DAILY_UPLOAD_LIMIT_BYTES="50000"
 export USERS_LIMIT="20"
 export USER_WHITELIST="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20"
+export SENTRY_ENABLED="false"
+export PYTHONDEVMODE=1
 
 # remove test db if it exists
 if [ -f $SMOLVAULT_DB ]; then
@@ -22,3 +24,5 @@ fi
 mkdir uploads
 
 pytest -vvv tests
+
+unset PYTHONDEVMODE
